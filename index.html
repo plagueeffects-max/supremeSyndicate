@@ -5,11 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supreme Syndicate | Medical Excellence</title>
+
+    <!-- SEO -->
+    <meta name="description" content="Supreme Syndicate – Kashmir's leading supplier of laboratory chemicals, reagents, bio-medical equipment and scientific instruments since 1978.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Supreme Syndicate | Medical Excellence">
+    <meta property="og:description" content="Kashmir's leading supplier of laboratory chemicals, reagents, bio-medical equipment and scientific instruments since 1978.">
+    <meta property="og:type" content="website">
+
+    <!-- Preconnect to CDN hosts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://unpkg.com">
+
+    <!-- Google Fonts (replaces @import in style.css) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap">
+
     <link rel="stylesheet" href="css/style.css">
-    <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- CDN scripts — defer stops render-blocking; run in document order after HTML parse -->
+    <script defer src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body class="dark-hero-active">
@@ -33,7 +53,7 @@
 
     <header class="hero">
         <!-- Animated Video Background with Poster -->
-        <video autoplay muted loop playsinline class="hero-bg-video" poster="Assets/Hero/backgroun.png" id="heroVideo">
+        <video autoplay muted loop playsinline preload="metadata" class="hero-bg-video" id="heroVideo">
             <source src="Assets/Hero/bg.mp4" type="video/mp4">
         </video>
 
@@ -81,16 +101,16 @@
 
         <div class="container">
             <div class="brands-grid">
-                <div class="brand-tile"><img src="Assets/merck.png" alt="Merck"></div>
-                <div class="brand-tile"><img src="Assets/Sigma-Aldrich-logo.png" alt="Sigma-Aldrich"></div>
-                <div class="brand-tile"><img src="Assets/HiMedia-Logo.jpg" alt="HiMedia"></div>
-                <div class="brand-tile"><img src="Assets/Loba.png" alt="Loba Chemie"></div>
-                <div class="brand-tile"><img src="Assets/Tosoh_logo..png" alt="Tosoh"></div>
-                <div class="brand-tile"><img src="Assets/moxcare-logo.png" alt="Moxcare"></div>
-                <div class="brand-tile"><img src="Assets/Abdoslogo.png" alt="Abdos"></div>
-                <div class="brand-tile"><img src="Assets/OmsonsLogo.png" alt="Omsons"></div>
-                <div class="brand-tile"><img src="Assets/Rivieralogo.webp" alt="Riviera"></div>
-                <div class="brand-tile"><img src="Assets/real gene.png" alt="Real Gene"></div>
+                <div class="brand-tile"><img src="Assets/merck.png" alt="Merck" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Sigma-Aldrich-logo.png" alt="Sigma-Aldrich" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/HiMedia-Logo.jpg" alt="HiMedia" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Loba.png" alt="Loba Chemie" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Tosoh_logo..png" alt="Tosoh" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/moxcare-logo.png" alt="Moxcare" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Abdoslogo.png" alt="Abdos" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/OmsonsLogo.png" alt="Omsons" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Rivieralogo.webp" alt="Riviera" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/real gene.png" alt="Real Gene" loading="lazy"></div>
             </div>
         </div>
     </section>
@@ -181,7 +201,7 @@
                 </div>
                 <div class="legacy-image gsap-fade">
                     <img src="Assets/Shop.jpeg" alt="Shop Overview" draggable="false" oncontextmenu="return false;"
-                        style="pointer-events: none;">
+                        loading="lazy" style="pointer-events: none;">
                 </div>
             </div>
 
@@ -196,7 +216,7 @@
                         materials necessary to drive their critical work forward.</p>
                 </div>
                 <div class="legacy-image gsap-fade">
-                    <img src="Assets/equipment.png" alt="Lab Equipment">
+                    <img src="Assets/equipment.png" alt="Lab Equipment" loading="lazy">
                 </div>
             </div>
         </div>
@@ -238,27 +258,27 @@
             <!-- Logo Grid -->
             <div class="clients-logo-grid">
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/Sher-i-Kashmir_Institute_of_Medical_Sciences_Logo.svg" alt="SKIMS">
+                    <img src="Assets/Our Clients/Sher-i-Kashmir_Institute_of_Medical_Sciences_Logo.svg" alt="SKIMS" loading="lazy">
                     <span>Sher-i-Kashmir Institute of Medical Sciences</span>
                 </div>
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/IIIM.png" alt="CSIR IIIM">
+                    <img src="Assets/Our Clients/IIIM.png" alt="CSIR IIIM" loading="lazy">
                     <span>CSIR Indian Institute of Integrative Medicine</span>
                 </div>
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/IUST.png" alt="IUST">
+                    <img src="Assets/Our Clients/IUST.png" alt="IUST" loading="lazy">
                     <span>Islamic University of Science & Technology</span>
                 </div>
                 <div class="client-logo-item logo-lg">
-                    <img src="Assets/Our Clients/Kashmir university.png" alt="University of Kashmir">
+                    <img src="Assets/Our Clients/Kashmir university.png" alt="University of Kashmir" loading="lazy">
                     <span>University of Kashmir</span>
                 </div>
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/Skuast.png" alt="SKUAST">
+                    <img src="Assets/Our Clients/Skuast.png" alt="SKUAST" loading="lazy">
                     <span>Sher-e-Kashmir University of Agricultural Sciences</span>
                 </div>
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/gmc.png" alt="GMC Srinagar">
+                    <img src="Assets/Our Clients/gmc.png" alt="GMC Srinagar" loading="lazy">
                     <span>Government Medical College, Srinagar</span>
                 </div>
             </div>
@@ -329,7 +349,7 @@
                         </div>
                     </a>
 
-                    <a class="fcc-item" href="https://supremesyndicate.in" target="_blank">
+                    <a class="fcc-item" href="https://supremesyndicate.in" target="_blank" rel="noopener noreferrer">
                         <div class="fcc-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <circle cx="12" cy="12" r="10" />
@@ -354,9 +374,9 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
-    <!-- Existing Footer 3D script -->
-    <script src="js/footer-3d.js"></script>
+    <script defer src="js/main.js"></script>
+    <!-- Footer WebGL -->
+    <script defer src="js/footer-3d.js"></script>
 
     <!-- Advanced Video Initialization -->
     <script>
