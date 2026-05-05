@@ -2907,6 +2907,10 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
 
   }
 
+  .legacy-section {
+    padding: 4vh 0 4vh !important;
+  }
+
   .clients-section {
 
     overflow: visible !important;
@@ -2979,9 +2983,9 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
 
     grid-template-columns: repeat(1, 1fr);
 
-    gap: 1.5rem;
+    gap: 0;
 
-    padding-bottom: 6rem;
+    padding-bottom: 2rem;
 
     display: flex;
 
@@ -2990,28 +2994,25 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
   }
 
   .client-logo-item {
-
-    min-height: 200px;
-
-    padding: 2rem 1.5rem 1.5rem;
-
+    min-height: 170px;
+    padding: 1.5rem 1.5rem 1.25rem;
     position: sticky;
-
+    border-radius: 28px;
     box-shadow: 0 -20px 40px rgba(0,0,0,0.06);
-
+    gap: 0.75rem;
   }
 
-  .client-logo-item:nth-child(1) { top: 80px;  z-index: 1; }
+  .client-logo-item:nth-child(1) { top: 68px;  z-index: 1; }
 
-  .client-logo-item:nth-child(2) { top: 90px;  z-index: 2; }
+  .client-logo-item:nth-child(2) { top: 84px;  z-index: 2; }
 
   .client-logo-item:nth-child(3) { top: 100px; z-index: 3; }
 
-  .client-logo-item:nth-child(4) { top: 110px; z-index: 4; }
+  .client-logo-item:nth-child(4) { top: 116px; z-index: 4; }
 
-  .client-logo-item:nth-child(5) { top: 120px; z-index: 5; }
+  .client-logo-item:nth-child(5) { top: 132px; z-index: 5; }
 
-  .client-logo-item:nth-child(6) { top: 130px; z-index: 6; }
+  .client-logo-item:nth-child(6) { top: 148px; z-index: 6; }
 
   .client-logo-item img {
 
@@ -3041,9 +3042,9 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
 
   .client-logo-item.logo-lg {
 
-    min-height: 200px;
+    min-height: 170px;
 
-    max-height: 200px;
+    max-height: unset;
 
   }
 
