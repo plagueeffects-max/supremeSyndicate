@@ -49,7 +49,22 @@
             <a href="#contact">Contact Us</a>
         </div>
         <a href="#contact" class="nav-cta">Connect</a>
+        <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </nav>
+
+    <div class="nav-mobile-overlay" id="navOverlay" aria-hidden="true">
+        <div class="nav-mobile-links">
+            <a href="#brands" class="nmo-link">Brands</a>
+            <a href="#products" class="nmo-link">Products</a>
+            <a href="#about" class="nmo-link">About Us</a>
+            <a href="#contact" class="nmo-link">Contact Us</a>
+            <a href="#contact" class="nmo-cta">Connect</a>
+        </div>
+    </div>
 
     <header class="hero">
         <!-- Animated Video Background with Poster -->
@@ -390,6 +405,27 @@
                 });
             }
         });
+    </script>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('navHamburger');
+            var overlay = document.getElementById('navOverlay');
+            if (!btn || !overlay) return;
+            function closeMenu() {
+                document.body.classList.remove('nav-open');
+                btn.setAttribute('aria-expanded', 'false');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+            btn.addEventListener('click', function () {
+                var open = document.body.classList.toggle('nav-open');
+                btn.setAttribute('aria-expanded', String(open));
+                overlay.setAttribute('aria-hidden', String(!open));
+            });
+            overlay.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', closeMenu);
+            });
+        })();
     </script>
 </body>
 

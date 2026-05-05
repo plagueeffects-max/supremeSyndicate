@@ -1401,15 +1401,6 @@ h4 {
 
 }
 
-@media (max-width: 768px) {
-
-  .footer-grid {
-
-    grid-template-columns: 1fr;
-
-  }
-
-}
 
 .footer-brand h2 {
 
@@ -1493,15 +1484,6 @@ h4 {
 
 }
 
-@media (max-width: 768px) {
-
-  .footer-links {
-
-    justify-content: flex-start;
-
-  }
-
-}
 
 .link-group h4 {
 
@@ -1697,37 +1679,6 @@ h4 {
 
 }
 
-@media (max-width: 768px) {
-
-  .eco-grid {
-
-    grid-template-columns: 1fr;
-
-  }
-
-  .clients-grid {
-
-    grid-template-columns: repeat(2, 1fr);
-
-  }
-
-  .cb-large,
-
-  .cb-wide {
-
-    grid-column: span 1;
-
-    grid-row: span 1;
-
-  }
-
-  .nav-links {
-
-    display: none;
-
-  }
-
-}
 
 .custom-cursor {
 
@@ -2556,7 +2507,110 @@ body.dark-hero-active .pill-blue {
 
 }
 
+
+/* ============================================================
+   HAMBURGER NAV
+   ============================================================ */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1001;
+  color: var(--text-dark);
+}
+.nav-hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  transform-origin: center;
+}
+body.dark-hero-active .nav-hamburger { color: var(--white); }
+body.nav-open .nav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+body.nav-open .nav-hamburger span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+body.nav-open .nav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.nav-mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 14, 23, 0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+}
+body.nav-open .nav-mobile-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+body.nav-open { overflow: hidden; }
+
+.nav-mobile-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 0.5rem;
+  padding: 6rem 2rem 4rem;
+}
+.nmo-link {
+  font-size: clamp(2rem, 8vw, 3rem);
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  opacity: 0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.nmo-link:active { color: #fff; }
+.nmo-cta {
+  opacity: 0;
+  margin-top: 2rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 1rem 2.5rem;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.nmo-cta:active { background: #1d4ed8; transform: scale(0.97); }
+
+@keyframes slideInLink {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+body.nav-open .nmo-link:nth-child(1) { animation: slideInLink 0.45s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both; }
+body.nav-open .nmo-link:nth-child(2) { animation: slideInLink 0.45s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both; }
+body.nav-open .nmo-link:nth-child(3) { animation: slideInLink 0.45s 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+body.nav-open .nmo-link:nth-child(4) { animation: slideInLink 0.45s 0.29s cubic-bezier(0.16, 1, 0.3, 1) both; }
+body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
 @media (max-width: 768px) {
+  .nav-hamburger { display: flex; }
+  .nav-mobile-overlay { display: block; }
+  .navbar .nav-cta { display: none; }
+
 
   body, html {
 
@@ -2654,11 +2708,11 @@ body.dark-hero-active .pill-blue {
 
   }
 
-  .hero .fc-1, .hero .fc-complex, .hero .fc-4, .hero .fc-5, .hero .fc-3 {
+  .hero .fc-1, .hero .fc-complex, .hero .fc-4, .hero .fc-3 {
 
-    display: block !important; 
+    display: block !important;
 
-    opacity: 0.6 !important; 
+    opacity: 0.45 !important;
 
     pointer-events: none;
 
@@ -2666,15 +2720,15 @@ body.dark-hero-active .pill-blue {
 
   }
 
-  .fc-1 { width: 40vw; top: 58% !important; bottom: auto !important; left: auto !important; right: 5%; } 
+  .hero .fc-2, .hero .fc-5 { display: none !important; }
 
-  .fc-complex { width: 75vw; top: 12% !important; left: 8% !important; right: auto !important; } 
+  .fc-1 { width: 38vw; top: 58% !important; bottom: auto !important; left: auto !important; right: 4%; }
 
-  .fc-4 { width: 28vw; top: 45%; left: 5%; } 
+  .fc-complex { width: 55vw; top: 10% !important; left: 8% !important; right: auto !important; }
 
-  .fc-3 { width: 25vw; top: 42% !important; right: 5% !important; bottom: auto !important; } 
+  .fc-4 { width: 26vw; top: 46%; left: 4%; }
 
-  .fc-5 { width: 32vw; top: 62% !important; left: 8% !important; bottom: auto !important; } 
+  .fc-3 { width: 24vw; top: 43% !important; right: 4% !important; bottom: auto !important; }
 
   .brands-header, .horizontal-header, .clients-header {
 
@@ -2756,13 +2810,13 @@ body.dark-hero-active .pill-blue {
 
     width: 100% !important;
 
-    transform: none !important; 
+    transform: none !important;
 
-    will-change: auto !important; 
+    will-change: auto !important;
 
-    gap: 4rem; 
+    gap: 2rem;
 
-    padding-bottom: 0 !important; 
+    padding-bottom: 0 !important;
 
   }
 
@@ -2778,29 +2832,37 @@ body.dark-hero-active .pill-blue {
 
     position: sticky;
 
-    box-shadow: 0 -20px 40px rgba(0,0,0,0.06); 
+    border-radius: 28px;
+
+    box-shadow: 0 -20px 40px rgba(0,0,0,0.06);
 
     transition: transform 0.3s ease;
 
   }
 
-  .horizontal-card:nth-child(1) { top: 100px; }
+  .horizontal-card:nth-child(1) { top: 80px; }
 
-  .horizontal-card:nth-child(2) { top: 120px; }
+  .horizontal-card:nth-child(2) { top: 96px; }
 
-  .horizontal-card:nth-child(3) { top: 140px; }
+  .horizontal-card:nth-child(3) { top: 112px; }
 
-  .horizontal-card:nth-child(4) { top: 160px; }
+  .horizontal-card:nth-child(4) { top: 128px; }
 
   .hc-img {
 
-    height: 250px;
+    height: 220px;
 
   }
 
   .hc-content {
 
     padding: 2rem;
+
+  }
+
+  .hc-content h3 {
+
+    font-size: 1.75rem;
 
   }
 
@@ -2896,13 +2958,19 @@ body.dark-hero-active .pill-blue {
 
   }
 
+  .clients-header {
+
+    padding-top: 8vh !important;
+
+  }
+
   .clients-logo-grid {
 
-    grid-template-columns: repeat(1, 1fr); 
+    grid-template-columns: repeat(1, 1fr);
 
     gap: 1.5rem;
 
-    padding-bottom: 80vh; 
+    padding-bottom: 40vh;
 
     display: flex;
 
@@ -2922,17 +2990,17 @@ body.dark-hero-active .pill-blue {
 
   }
 
-  .client-logo-item:nth-child(1) { top: 100px; z-index: 1; }
+  .client-logo-item:nth-child(1) { top: 80px;  z-index: 1; }
 
-  .client-logo-item:nth-child(2) { top: 110px; z-index: 2; }
+  .client-logo-item:nth-child(2) { top: 90px;  z-index: 2; }
 
-  .client-logo-item:nth-child(3) { top: 120px; z-index: 3; }
+  .client-logo-item:nth-child(3) { top: 100px; z-index: 3; }
 
-  .client-logo-item:nth-child(4) { top: 130px; z-index: 4; }
+  .client-logo-item:nth-child(4) { top: 110px; z-index: 4; }
 
-  .client-logo-item:nth-child(5) { top: 140px; z-index: 5; }
+  .client-logo-item:nth-child(5) { top: 120px; z-index: 5; }
 
-  .client-logo-item:nth-child(6) { top: 150px; z-index: 6; }
+  .client-logo-item:nth-child(6) { top: 130px; z-index: 6; }
 
   .client-logo-item img {
 
@@ -2974,6 +3042,14 @@ body.dark-hero-active .pill-blue {
 
   }
 
+  .footer-premium {
+
+    padding: 4rem 0 3rem !important;
+
+    min-height: auto !important;
+
+  }
+
   .footer-premium .container.footer-content-layer {
 
     width: 100% !important;
@@ -2990,7 +3066,9 @@ body.dark-hero-active .pill-blue {
 
     left: auto !important;
 
-    margin-top: 3rem !important;
+    margin-top: 2rem !important;
+
+    pointer-events: auto !important;
 
   }
 
@@ -3001,6 +3079,40 @@ body.dark-hero-active .pill-blue {
     width: 100%;
 
     max-width: 100%;
+
+  }
+
+  .footer-massive-text {
+
+    position: relative !important;
+
+    bottom: auto !important;
+
+    right: auto !important;
+
+    top: auto !important;
+
+    left: auto !important;
+
+    transform: none !important;
+
+    text-align: center;
+
+    margin-top: 2rem;
+
+    padding-bottom: 2rem;
+
+  }
+
+  .footer-massive-text h1 {
+
+    font-size: 14vw !important;
+
+    white-space: normal !important;
+
+    color: rgba(255, 255, 255, 0.12) !important;
+
+    line-height: 0.9;
 
   }
 
@@ -3026,4 +3138,85 @@ body.dark-hero-active .pill-blue {
 
   }
 
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .footer-links {
+    justify-content: flex-start;
+  }
+  .eco-grid {
+    grid-template-columns: 1fr;
+  }
+  .clients-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cb-large,
+  .cb-wide {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+/* ============================================================
+   VERY SMALL SCREENS (iPhone SE, Galaxy A, 320px-390px)
+   ============================================================ */
+@media (max-width: 390px) {
+  .hero-title {
+    font-size: clamp(1.9rem, 10vw, 2.4rem);
+  }
+  .brand-tile {
+    padding: 1.2rem 0.8rem;
+  }
+  .brand-tile img {
+    max-height: 36px;
+  }
+  .hc-content {
+    padding: 1.5rem;
+  }
+  .hc-content h3 {
+    font-size: 1.5rem;
+  }
+  .fcc-header h3 {
+    font-size: 2rem;
+  }
+  .fcc-value {
+    white-space: normal;
+    word-break: break-word;
+  }
+  .clients-title {
+    font-size: clamp(2rem, 9vw, 2.6rem);
+  }
+  .footer-massive-text h1 {
+    font-size: 18vw !important;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION (accessibility)
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .hsi-dot,
+  .card-glow-blob,
+  .fcc-badge::before,
+  .nav-cta::before,
+  .fcc-icon svg,
+  .fcc-item:nth-child(1) .fcc-icon svg,
+  .fcc-item:nth-child(2) .fcc-icon svg,
+  .fcc-item:nth-child(3) .fcc-icon svg,
+  .fcc-item:nth-child(4) .fcc-icon svg,
+  .nmo-link,
+  .nmo-cta {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .footer-contact-card,
+  .brand-tile,
+  .client-logo-item,
+  .fcc-item,
+  .legacy-image img,
+  .nav-hamburger span,
+  .nav-mobile-overlay {
+    transition: none !important;
+  }
 }
