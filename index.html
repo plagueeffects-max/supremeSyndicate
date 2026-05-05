@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supreme Syndicate | Medical Excellence</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body class="dark-hero-active">
+    <div class="custom-cursor"></div>
+    <div class="tech-grid-bg"></div>
+
+    <nav class="navbar gsap-fade-nav"
+        style="background: transparent !important; backdrop-filter: none !important; border: none !important; box-shadow: none !important;">
+        <a href="index.html" class="nav-logo">
+            <img src="Assets/Logo.svg" alt="Supreme Syndicate">
+
+        </a>
+        <div class="nav-links">
+            <a href="#brands">Brands</a>
+            <a href="#products">Products</a>
+            <a href="#about">About Us</a>
+            <a href="#contact">Contact Us</a>
+        </div>
+        <a href="#contact" class="nav-cta">Connect</a>
+    </nav>
+
+    <header class="hero">
+        <!-- Animated Video Background with Poster -->
+        <video autoplay muted loop playsinline class="hero-bg-video" poster="Assets/Hero/backgroun.png" id="heroVideo">
+            <source src="Assets/Hero/bg.mp4" type="video/mp4">
+        </video>
+
+        <!-- Floating 3D Assets for Awwwards Aesthetic -->
+        <div class="hero-float-container">
+            <img src="Assets/Hero/1.png" class="float-cell fc-1" data-speed="-0.04" alt="Cell 1">
+            <img src="Assets/Hero/2.png" class="float-cell fc-2" data-speed="0.06" alt="Cell 2">
+            <img src="Assets/Hero/3.png" class="float-cell fc-3" data-speed="-0.08" alt="Cell 3">
+            <img src="Assets/Hero/4.png" class="float-cell fc-4" data-speed="0.03" alt="Cell 4">
+            <img src="Assets/Hero/5.png" class="float-cell fc-5" data-speed="0.05" alt="Cell 5">
+            <img src="Assets/Hero/6.png" class="float-cell fc-complex" data-speed="0.03" alt="Cell 6">
+        </div>
+
+        <div class="container">
+            <div class="hero-inner">
+                <h1 class="hero-title gsap-fade"><span class="hero-white-gradient-text">Solutions that
+                        empower.</span><span class="hero-gradient-text">Products that endure.</span></h1>
+
+            </div>
+        </div>
+
+        <!-- Mobile Scroll Indicator -->
+        <div class="hero-scroll-indicator">
+            <span class="hsi-label">SCROLL</span>
+            <div class="hsi-mouse">
+                <div class="hsi-dot"></div>
+            </div>
+        </div>
+    </header>
+
+    <section class="brands-section" id="brands">
+        <div class="container brands-header"
+            style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; padding-bottom: 3rem; margin-bottom: 4rem; border-bottom: 1px solid rgba(0,0,0,0.06); position: relative;">
+            <div class="brands-title" style="max-width: 600px;">
+                <h2 class="gsap-fade"
+                    style="font-size: clamp(3rem, 5vw, 5rem); letter-spacing: -0.03em; line-height: 1;">Brands
+                    we<br>work with.</h2>
+            </div>
+            <div class="brands-desc gsap-fade" style="max-width: 350px; padding-bottom: 0.5rem;">
+                <p style="color: var(--text-gray); font-size: 1.1rem; line-height: 1.6;">We collaborate with the world's
+                    most innovative scientific manufacturers to deliver unparalleled quality.
+                </p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="brands-grid">
+                <div class="brand-tile"><img src="Assets/merck.png" alt="Merck"></div>
+                <div class="brand-tile"><img src="Assets/Sigma-Aldrich-logo.png" alt="Sigma-Aldrich"></div>
+                <div class="brand-tile"><img src="Assets/HiMedia-Logo.jpg" alt="HiMedia"></div>
+                <div class="brand-tile"><img src="Assets/Loba.png" alt="Loba Chemie"></div>
+                <div class="brand-tile"><img src="Assets/Tosoh_logo..png" alt="Tosoh"></div>
+                <div class="brand-tile"><img src="Assets/moxcare-logo.png" alt="Moxcare"></div>
+                <div class="brand-tile"><img src="Assets/Abdoslogo.png" alt="Abdos"></div>
+                <div class="brand-tile"><img src="Assets/OmsonsLogo.png" alt="Omsons"></div>
+                <div class="brand-tile"><img src="Assets/Rivieralogo.webp" alt="Riviera"></div>
+                <div class="brand-tile"><img src="Assets/real gene.png" alt="Real Gene"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="horizontal-stack-wrapper" id="products" style="position: relative; z-index: 3;">
+        <section class="horizontal-section"
+            style="border-top-left-radius: 40px; border-top-right-radius: 40px; box-shadow: 0 -20px 60px rgba(0,0,0,0.06);">
+            <div class="horizontal-sticky">
+                <div class="container horizontal-header"
+                    style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; padding-bottom: 3rem; border-bottom: 1px solid rgba(0,0,0,0.06); position: relative;">
+                    <div class="horizontal-title" style="max-width: 600px;">
+                        <h2 class="gsap-fade"
+                            style="font-size: clamp(3rem, 5vw, 5rem); letter-spacing: -0.03em; line-height: 1;">Our
+                            Product<br>Range.</h2>
+                    </div>
+                    <div class="horizontal-desc gsap-fade" style="max-width: 350px; padding-bottom: 0.5rem;">
+                        <p style="color: var(--text-gray); font-size: 1.1rem; line-height: 1.6;">A comprehensive
+                            portfolio of High-Purity Chemicals and Reagents, Glassware & Plasticware, Laboratory
+                            Instruments, and state-of-the-art
+                            diagnostic equipment.</p>
+                    </div>
+                </div>
+
+                <div class="horizontal-track">
+                    <!-- Card 1 -->
+                    <div class="horizontal-card">
+                        <div class="hc-img">
+                            <video src="Assets/Cards/Chemicals.webm" autoplay loop muted playsinline></video>
+                        </div>
+                        <div class="hc-content">
+                            <span class="hc-index">01</span>
+                            <h3>Chemicals, Reagents</h3>
+                            <p>High-purity laboratory chemicals and specialized reagents.</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="horizontal-card">
+                        <div class="hc-img">
+                            <video src="Assets/Cards/Equipment.webm" autoplay loop muted playsinline></video>
+                        </div>
+                        <div class="hc-content">
+                            <span class="hc-index">02</span>
+                            <h3>Bio-Medical Equipment</h3>
+                            <p>State-of-the-art diagnostic machinery and research equipment.</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="horizontal-card">
+                        <div class="hc-img">
+                            <video src="Assets/Cards/Centrifuge.webm" autoplay loop muted playsinline></video>
+                        </div>
+                        <div class="hc-content">
+                            <span class="hc-index">03</span>
+                            <h3>Lab Instruments</h3>
+                            <p>Analytical measurement instruments.</p>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="horizontal-card">
+                        <div class="hc-img">
+                            <video src="Assets/Cards/Plasticware.webm" autoplay loop muted playsinline></video>
+                        </div>
+                        <div class="hc-content">
+                            <span class="hc-index">04</span>
+                            <h3>Glassware & Plasticware</h3>
+                            <p>Medical-grade borosilicate glassware and high-performance plastics.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <section class="legacy-section" id="about">
+        <div class="container">
+            <!-- Row 1 -->
+            <div class="legacy-row">
+                <div class="legacy-content">
+                    <h2 class="gsap-fade">A leading name, built on years of trust</h2>
+                    <p class="gsap-fade">Established in 1978 by our founder Syed Taseer Andrabi, Supreme Syndicate has become a respected
+                        name in the healthcare and research sectors in Kashmir. Under the leadership of Syed Azad, we've
+                        achieved industry prominence in the last couple of decades for Chemicals and a vast array of lab
+                        consumables . We maintain exemplary relations and garner profound respect from our clients
+                        across the sectors we serve.</p>
+                </div>
+                <div class="legacy-image gsap-fade">
+                    <img src="Assets/Shop.jpeg" alt="Shop Overview" draggable="false" oncontextmenu="return false;"
+                        style="pointer-events: none;">
+                </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="legacy-row reverse">
+                <div class="legacy-content">
+                    <h2 class="gsap-fade">Committed to integrity & excellence</h2>
+                    <p class="gsap-fade">Excellence in healthcare and research demands uncompromising quality. That is why we source our
+                        vast array of chemicals and laboratory consumables exclusively from globally renowned
+                        manufacturers. Our commitment to integrity means we provide only the
+                        authentic products, ensuring that our clients have the precise and reliable
+                        materials necessary to drive their critical work forward.</p>
+                </div>
+                <div class="legacy-image gsap-fade">
+                    <img src="Assets/equipment.png" alt="Lab Equipment">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="clients-section">
+        <div class="clients-bg-grid"></div>
+        <div class="container">
+
+            <!-- Header -->
+            <div class="clients-header">
+                <div>
+                    <h2 class="clients-title gsap-fade">Trusted by Kashmir's<br>leading institutions.</h2>
+                </div>
+                <p class="clients-sub gsap-fade">From premier medical colleges to cutting-edge research institutes, the region's
+                    most respected organizations rely on Supreme Syndicate.</p>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="clients-stats">
+                <div class="clients-stat animate-stat">
+                    <span class="stat-num" data-target="1978">0</span>
+                    <span class="stat-label">Year Founded</span>
+                </div>
+                <div class="clients-stat-divider"></div>
+                <div class="clients-stat animate-stat">
+                    <div style="display: flex; align-items: baseline;">
+                        <span class="stat-num" data-target="100">0</span><span class="stat-num">%</span>
+                    </div>
+                    <span class="stat-label">Client Retention</span>
+                </div>
+                <div class="clients-stat-divider"></div>
+                <div class="clients-stat animate-stat">
+                    <span class="stat-num">J&K</span>
+                    <span class="stat-label">Region Coverage</span>
+                </div>
+            </div>
+
+            <!-- Logo Grid -->
+            <div class="clients-logo-grid">
+                <div class="client-logo-item">
+                    <img src="Assets/Our Clients/Sher-i-Kashmir_Institute_of_Medical_Sciences_Logo.svg" alt="SKIMS">
+                    <span>Sher-i-Kashmir Institute of Medical Sciences</span>
+                </div>
+                <div class="client-logo-item">
+                    <img src="Assets/Our Clients/IIIM.png" alt="CSIR IIIM">
+                    <span>CSIR Indian Institute of Integrative Medicine</span>
+                </div>
+                <div class="client-logo-item">
+                    <img src="Assets/Our Clients/IUST.png" alt="IUST">
+                    <span>Islamic University of Science & Technology</span>
+                </div>
+                <div class="client-logo-item logo-lg">
+                    <img src="Assets/Our Clients/Kashmir university.png" alt="University of Kashmir">
+                    <span>University of Kashmir</span>
+                </div>
+                <div class="client-logo-item">
+                    <img src="Assets/Our Clients/Skuast.png" alt="SKUAST">
+                    <span>Sher-e-Kashmir University of Agricultural Sciences</span>
+                </div>
+                <div class="client-logo-item">
+                    <img src="Assets/Our Clients/gmc.png" alt="GMC Srinagar">
+                    <span>Government Medical College, Srinagar</span>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <footer class="footer-premium" id="contact">
+        <canvas id="footer-webgl-canvas"></canvas>
+        <div class="footer-glow"></div>
+
+        <div class="footer-massive-text">
+            <h1>SUPREME<br>SYNDICATE</h1>
+        </div>
+
+        <div class="container footer-content-layer">
+            <div class="footer-contact-card gsap-fade">
+
+                <!-- Card inner glow blob -->
+                <div class="card-glow-blob"></div>
+
+                <!-- Header -->
+                <div class="fcc-header">
+                    <div class="fcc-badge">Get in Touch</div>
+                    <h3>Let's work<br><span>together.</span></h3>
+                    <p class="fcc-tagline">Reach out to our team and we'll get back to you within 24 hours.</p>
+                </div>
+
+                <!-- Contact Items -->
+                <div class="fcc-items">
+                    <a class="fcc-item" href="tel:+919419007932">
+                        <div class="fcc-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path
+                                    d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.66A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z" />
+                            </svg>
+                        </div>
+                        <div class="fcc-item-text">
+                            <span class="fcc-label">Phone</span>
+                            <span class="fcc-value">+91 9419007932</span>
+                        </div>
+                    </a>
+
+                    <a class="fcc-item" href="mailto:admin@supremesyndicate.in">
+                        <div class="fcc-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <polyline points="22,6 12,13 2,6" />
+                            </svg>
+                        </div>
+                        <div class="fcc-item-text">
+                            <span class="fcc-label">Email</span>
+                            <span class="fcc-value">admin@supremesyndicate.in</span>
+                        </div>
+                    </a>
+
+                    <a class="fcc-item" href="#">
+                        <div class="fcc-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                        </div>
+                        <div class="fcc-item-text">
+                            <span class="fcc-label">Address</span>
+                            <span class="fcc-value">267 Nursing Garh, Srinagar 190010</span>
+                        </div>
+                    </a>
+
+                    <a class="fcc-item" href="https://supremesyndicate.in" target="_blank">
+                        <div class="fcc-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="2" y1="12" x2="22" y2="12" />
+                                <path
+                                    d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                            </svg>
+                        </div>
+                        <div class="fcc-item-text">
+                            <span class="fcc-label">Website</span>
+                            <span class="fcc-value">supremesyndicate.in</span>
+                        </div>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="footer-bottom-bar gsap-fade">
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <!-- Existing Footer 3D script -->
+    <script src="js/footer-3d.js"></script>
+
+    <!-- Advanced Video Initialization -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const heroVid = document.getElementById('heroVideo');
+            if (heroVid) {
+                // Wait for metadata to know the duration
+                heroVid.addEventListener('loadedmetadata', () => {
+                    // Randomize start time to make it feel organic
+                    heroVid.currentTime = Math.random() * heroVid.duration;
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
