@@ -43,10 +43,9 @@ supremeSyndicate/
 │   package-lock.json
 │
 ├─ Assets/                   # Media assets – images, videos, logos
-│   ├─ Hero/                 # hero video src + poster image
-│   │   bg.mp4
-│   │   backgroun.png        # poster image (note typo preserved from repo)
-│   ├─ Hero/ (floating PNGs) # 1.png … 6.png – used for floating cells
+│   ├─ Hero/                 # hero video src (WebM)
+│   │   bg.webm
+│   ├─ Hero/ (floating WebP) # 1.webp … 6.webp – used for floating cells
 │   └─ Cards/               # .webm clips for each horizontal card
 │       Chemicals.webm
 │       Equipment.webm
@@ -134,14 +133,13 @@ heroVid.addEventListener('loadedmetadata', () => {
 ## 6️⃣ Assets <a name="assets"></a>
 | Folder | Asset | Purpose |
 |--------|-------|---------|
-| `Assets/Hero/` | `bg.mp4` | Background hero video (looped, muted). |
-| `Assets/Hero/` | `backgroun.png` | Poster image shown before video loads (notice the original typo). |
-| `Assets/Hero/` | `1.png – 6.png` | Floating decorative images; each gets a `data‑speed` for parallax. |
+| `Assets/Hero/` | `bg.webm` | Background hero video (looped, muted). |
+| `Assets/Hero/` | `1.webp – 6.webp` | Floating decorative images; each gets a `data‑speed` for parallax. |
 | `Assets/Cards/` | `Chemicals.webm` | Video preview for the “Chemicals, Reagents” card. |
 | `Assets/Cards/` | `Equipment.webm` | Video preview for the “Bio‑Medical Equipment” card. |
 | `Assets/Cards/` | `Centrifuge.webm` | Video preview for the “Lab Instruments” card. |
 | `Assets/Cards/` | `Plasticware.webm` | Video preview for the “Glassware & Plasticware” card. |
-| `Assets/Our Clients/` | Various logos (e.g., `Merck.png`, `Sigma‑Aldrich-logo.png`) | Used in the client‑logo grid. |
+| `Assets/Our Clients/` | Various logos (e.g., `Merck.webp`, `Sigma‑Aldrich-logo.webp`) | Used in the client‑logo grid. |
 ---
 
 ---
@@ -170,8 +168,8 @@ The project is **pure static** – no bundler is required, but the following wor
 ## 9️⃣ Performance & Production Recommendations <a name="performance‑production"></a>
 | Area | Recommendation |
 |------|----------------|
-| **Video** | Convert `bg.mp4` to **WebM** for modern browsers and provide a **fallback MP4**. Enable `preload="metadata"`. |
-| **Images** | Serve **optimized WebP** variants for logos and floating assets. Use `srcset` if you expect high‑DPI devices. |
+| **Video** | Already migrated to **WebM** for optimal playback. |
+| **Images** | Already migrated to **WebP** across the entire project. |
 | **CSS** | Extract critical CSS (above‑the‑fold) into the `<head>` to reduce first‑paint time. |
 | **JS** | Defer non‑essential scripts (`defer` attribute) and **async‑load** GSAP/Lenis after the hero is visible. |
 | **Cache** | Set long‑term `Cache‑Control` headers for static assets (images, videos) via your hosting platform. |

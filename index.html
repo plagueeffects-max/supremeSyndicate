@@ -19,6 +19,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <script>
+        // High-performance iOS detection to apply specialized Safari fixes
+        (function() {
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) document.documentElement.classList.add('is-ios');
+        })();
+    </script>
     <link rel="preconnect" href="https://unpkg.com">
 
     <!-- Google Fonts (replaces @import in style.css) -->
@@ -73,17 +81,17 @@
     <header class="hero">
         <!-- Animated Video Background with Poster -->
         <video autoplay muted loop playsinline preload="metadata" class="hero-bg-video" id="heroVideo">
-            <source src="Assets/Hero/bg.mp4" type="video/mp4">
+            <source src="Assets/Hero/bg.webm" type="video/webm">
         </video>
 
         <!-- Floating 3D Assets for Awwwards Aesthetic -->
         <div class="hero-float-container">
-            <img src="Assets/Hero/1.png" class="float-cell fc-1" data-speed="-0.04" alt="Cell 1">
-            <img src="Assets/Hero/2.png" class="float-cell fc-2" data-speed="0.06" alt="Cell 2">
-            <img src="Assets/Hero/3.png" class="float-cell fc-3" data-speed="-0.08" alt="Cell 3">
-            <img src="Assets/Hero/4.png" class="float-cell fc-4" data-speed="0.03" alt="Cell 4">
-            <img src="Assets/Hero/5.png" class="float-cell fc-5" data-speed="0.05" alt="Cell 5">
-            <img src="Assets/Hero/6.png" class="float-cell fc-complex" data-speed="0.03" alt="Cell 6">
+            <img src="Assets/Hero/1.webp" class="float-cell fc-1" data-speed="-0.04" alt="Cell 1">
+            <img src="Assets/Hero/2.webp" class="float-cell fc-2" data-speed="0.06" alt="Cell 2">
+            <img src="Assets/Hero/3.webp" class="float-cell fc-3" data-speed="-0.08" alt="Cell 3">
+            <img src="Assets/Hero/4.webp" class="float-cell fc-4" data-speed="0.03" alt="Cell 4">
+            <img src="Assets/Hero/5.webp" class="float-cell fc-5" data-speed="0.05" alt="Cell 5">
+            <img src="Assets/Hero/6.webp" class="float-cell fc-complex" data-speed="0.03" alt="Cell 6">
         </div>
 
         <div class="container">
@@ -120,16 +128,16 @@
 
         <div class="container">
             <div class="brands-grid">
-                <div class="brand-tile"><img src="Assets/merck.png" alt="Merck" loading="lazy"></div>
-                <div class="brand-tile"><img src="Assets/Sigma-Aldrich-logo.png" alt="Sigma-Aldrich" loading="lazy"></div>
-                <div class="brand-tile"><img src="Assets/HiMedia-Logo.jpg" alt="HiMedia" loading="lazy"></div>
-                <div class="brand-tile"><img src="Assets/Loba.png" alt="Loba Chemie" loading="lazy"></div>
-                <div class="brand-tile"><img src="Assets/Tosoh_logo..png" alt="Tosoh" loading="lazy"></div>
-                <div class="brand-tile"><img src="Assets/moxcare-logo.png" alt="Moxcare" loading="lazy"></div>
-                <div class="brand-tile"><img src="Assets/Abdoslogo.png" alt="Abdos" loading="lazy"></div>
-                <div class="brand-tile"><img src="Assets/OmsonsLogo.png" alt="Omsons" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/merck.webp" alt="Merck" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Sigma-Aldrich-logo.webp" alt="Sigma-Aldrich" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/HiMedia-Logo.webp" alt="HiMedia" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Loba.webp" alt="Loba Chemie" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Tosoh_logo..webp" alt="Tosoh" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/moxcare-logo.webp" alt="Moxcare" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/Abdoslogo.webp" alt="Abdos" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/OmsonsLogo.webp" alt="Omsons" loading="lazy"></div>
                 <div class="brand-tile"><img src="Assets/Rivieralogo.webp" alt="Riviera" loading="lazy"></div>
-                <div class="brand-tile"><img src="Assets/real gene.png" alt="Real Gene" loading="lazy"></div>
+                <div class="brand-tile"><img src="Assets/real gene.webp" alt="Real Gene" loading="lazy"></div>
             </div>
         </div>
     </section>
@@ -223,7 +231,7 @@
                         across the sectors we serve.</p>
                 </div>
                 <div class="legacy-image gsap-fade">
-                    <img src="Assets/Shop.jpeg" alt="Shop Overview" draggable="false" oncontextmenu="return false;"
+                    <img src="Assets/Shop.webp" alt="Shop Overview" draggable="false" oncontextmenu="return false;"
                         loading="lazy" style="pointer-events: none;">
                 </div>
             </div>
@@ -239,7 +247,7 @@
                         materials necessary to drive their critical work forward.</p>
                 </div>
                 <div class="legacy-image gsap-fade">
-                    <img src="Assets/equipment.png" alt="Lab Equipment" loading="lazy">
+                    <img src="Assets/equipment.webp" alt="Lab Equipment" loading="lazy">
                 </div>
             </div>
         </div>
@@ -281,27 +289,27 @@
             <!-- Logo Grid -->
             <div class="clients-logo-grid">
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/Sher-i-Kashmir_Institute_of_Medical_Sciences_Logo.svg" alt="SKIMS" loading="lazy">
+                    <img src="Assets/Our Clients/Sher-i-Kashmir_Institute_of_Medical_Sciences_Logo.webp" alt="SKIMS" loading="lazy">
                     <span>Sher-i-Kashmir Institute of Medical Sciences</span>
                 </div>
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/IIIM.png" alt="CSIR IIIM" loading="lazy">
+                    <img src="Assets/Our Clients/IIIM.webp" alt="CSIR IIIM" loading="lazy">
                     <span>CSIR Indian Institute of Integrative Medicine</span>
                 </div>
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/IUST.png" alt="IUST" loading="lazy">
+                    <img src="Assets/Our Clients/IUST.webp" alt="IUST" loading="lazy">
                     <span>Islamic University of Science & Technology</span>
                 </div>
                 <div class="client-logo-item logo-lg">
-                    <img src="Assets/Our Clients/Kashmir university.png" alt="University of Kashmir" loading="lazy">
+                    <img src="Assets/Our Clients/Kashmir university.webp" alt="University of Kashmir" loading="lazy">
                     <span>University of Kashmir</span>
                 </div>
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/Skuast.png" alt="SKUAST" loading="lazy">
+                    <img src="Assets/Our Clients/Skuast.webp" alt="SKUAST" loading="lazy">
                     <span>Sher-e-Kashmir University of Agricultural Sciences</span>
                 </div>
                 <div class="client-logo-item">
-                    <img src="Assets/Our Clients/gmc.png" alt="GMC Srinagar" loading="lazy">
+                    <img src="Assets/Our Clients/gmc.webp" alt="GMC Srinagar" loading="lazy">
                     <span>Government Medical College, Srinagar</span>
                 </div>
             </div>

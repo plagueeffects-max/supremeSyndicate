@@ -1,3 +1,22 @@
+/* GLOBAL PERFORMANCE & RENDERING HARDENING */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: auto !important; /* Let Lenis handle the smoothing logic */
+  text-rendering: optimizeLegibility;
+}
+
+/* Standardize GPU acceleration for key animated layers */
+.hero, 
+.horizontal-track, 
+.client-logo-item, 
+.legacy-row, 
+.footer-premium {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translate3d(0,0,0); /* Baseline GPU hint for all platforms */
+}
+
 .hero-float-container {
 
   position: absolute;
@@ -3262,6 +3281,14 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
 
 /* Class added by inline iOS-detection script */
 html.is-ios .float-cell { transition: none !important; }
+html.is-ios .client-logo-item { 
+  -webkit-transform: translate3d(0,0,0); /* Force hardware acceleration */
+  transition: none !important; 
+}
+html.is-ios body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 /* ============================================================
    REDUCED MOTION (accessibility)
