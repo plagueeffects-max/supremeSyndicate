@@ -31,6 +31,9 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- iOS patch: must come after ScrollTrigger but before main.js so that
+         normalizeScroll is active before any ScrollTriggers are registered -->
+    <script defer src="js/ios-patch.js"></script>
 </head>
 
 <body class="dark-hero-active">
@@ -394,6 +397,19 @@
         </div>
     </footer>
 
+    <!-- iOS early-detection: runs synchronously during parse, before any deferred
+         script executes. Strips data-speed so main.js never registers parallax
+         on float cells, and marks <html> for CSS targeting. -->
+    <script>
+      (function () {
+        if (!/iPad|iPhone|iPod/.test(navigator.userAgent) || window.MSStream) return;
+        document.documentElement.classList.add('is-ios');
+        // Remove data-speed before main.js reads it — prevents per-frame JS
+        // translateY updates that cause scroll jank on iOS.
+        var els = document.querySelectorAll('[data-speed]');
+        for (var i = 0; i < els.length; i++) els[i].removeAttribute('data-speed');
+      })();
+    </script>
     <script defer src="js/main.js"></script>
     <!-- Footer WebGL -->
     <script defer src="js/footer-3d.js"></script>

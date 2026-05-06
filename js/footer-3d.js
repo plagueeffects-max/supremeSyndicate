@@ -1,5 +1,9 @@
 // js/footer-3d.js
 document.addEventListener('DOMContentLoaded', () => {
+    // Skip WebGL on iOS — InstancedMesh + shadow maps are too GPU-intensive on
+    // mobile hardware and cause scroll jank throughout the page.
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) return;
+
     const canvas = document.getElementById('footer-webgl-canvas');
     if (!canvas) return;
 
