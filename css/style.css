@@ -2852,7 +2852,7 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
 
     box-shadow: 0 -20px 40px rgba(0,0,0,0.06);
 
-    transition: transform 0.3s ease;
+    transition: none;
 
   }
 
@@ -3006,8 +3006,8 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
     box-shadow: 0 -12px 30px rgba(0,0,0,0.08); /* Premium subtle top shadow */
     gap: 1rem;
     display: grid;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
-    will-change: transform, top;
+    transition: none;
+    will-change: auto;
   }
 
   .client-logo-item:active {
@@ -3261,7 +3261,6 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
 }
 
 /* Class added by inline iOS-detection script */
-html.is-ios #footer-webgl-canvas { display: none !important; }
 html.is-ios .float-cell { transition: none !important; }
 
 /* ============================================================
