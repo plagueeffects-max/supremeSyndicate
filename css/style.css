@@ -194,23 +194,15 @@ html {
 }
 
 .hero {
-
   position: relative;
-
   width: 100%;
-
   min-height: 100vh;
-
   display: flex;
-
   align-items: center;
-
   padding-top: 80px;
-
   z-index: 1;
-
+  background-color: #050a15;
   overflow: hidden;
-
 }
 
 .brands-grid {
@@ -1840,29 +1832,21 @@ body.dark-hero-active .pill-blue {
 }
 
 .hero-bg-video {
-
   position: absolute;
-
   top: 0;
-
   left: 0;
-
   width: 100%;
-
   height: 100%;
-
   object-fit: cover;
-
-  z-index: 0;
-
-  pointer-events: none;
-
-  opacity: 1;
-
-
-
+  z-index: -1;
+  opacity: 0;
+  animation: heroVideoFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes heroVideoFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 .hero-gradient-text {
 

@@ -20,6 +20,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
+    <style>
+        /* CRITICAL CSS: Prevents white flash during initial load */
+        html, body { background-color: #050a15 !important; margin: 0; padding: 0; }
+        .hero { background-color: #050a15 !important; min-height: 100vh; }
+    </style>
+
     <script>
         // High-performance iOS detection to apply specialized Safari fixes
         (function() {
