@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo, lazy, Suspense } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import {
   motion,
   useScroll,
@@ -7,11 +7,6 @@ import {
   AnimatePresence,
 } from 'framer-motion';
 import HeroScene from './HeroScene.jsx';
-
-const Spline = lazy(() => import('@splinetool/react-spline'));
-
-// Replace with your published Spline scene URL (publish from spline.design)
-const SPLINE_SCENE = 'https://prod.spline.design/6Wq1Q7YoRtBCMjEE/scene.splinecode';
 
 /* =============================================================
    METEORS
@@ -267,33 +262,6 @@ function DustOverlay() {
   );
 }
 
-/* =============================================================
-   LAYER 6: SPLINE 3D
-   Floating 3D element fades in briefly mid-scroll then fades out.
-   Replace SPLINE_SCENE with your published Spline URL.
-   ============================================================= */
-const SplineLayer = React.memo(function SplineLayer({ scrollProgress }) {
-  const splineOpacity = useTransform(
-    scrollProgress,
-    [0.05, 0.18, 0.45],
-    [0, 0.5, 0]
-  );
-
-  return (
-    <motion.div
-      className="absolute inset-0 z-[9] pointer-events-none"
-      style={{ opacity: splineOpacity }}
-    >
-      <Suspense fallback={null}>
-        <Spline
-          scene={SPLINE_SCENE}
-          style={{ width: '100%', height: '100%' }}
-          onError={() => {}}
-        />
-      </Suspense>
-    </motion.div>
-  );
-});
 
 /* =============================================================
    MAIN HERO COMPONENT
@@ -366,9 +334,6 @@ export default function Hero() {
         <motion.div className="hero-canvas absolute inset-0 z-[7]" style={{ opacity: canvasOpacity }}>
           <HeroScene mouseX={mouseX} mouseY={mouseY} scrollProgress={scrollProgressRef} />
         </motion.div>
-
-        {/* Z-9: Spline 3D (appears briefly on first scroll) */}
-        <SplineLayer scrollProgress={smoothProgress} />
 
         {/* Z-10: Gold dust drift overlay */}
         <DustOverlay />
