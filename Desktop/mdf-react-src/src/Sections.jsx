@@ -517,7 +517,7 @@ export function Craft() {
           whileInView="show"
           viewport={{ once: true, margin: '-100px' }}
         >
-          <motion.div className="section-num" variants={fadeUp}>04 — The Difference</motion.div>
+          <motion.div className="section-num" variants={fadeUp}>05 — The Difference</motion.div>
           <div style={{ overflow: 'hidden' }}>
             <motion.h2 className="section-title" variants={textReveal}>
               Why our <em>shelves matter.</em>
@@ -624,7 +624,7 @@ export function Trust() {
           whileInView="show"
           viewport={{ once: true, margin: '-100px' }}
         >
-          <motion.div className="section-num" variants={fadeUp}>05 — Voices</motion.div>
+          <motion.div className="section-num" variants={fadeUp}>06 — Voices</motion.div>
           <div style={{ overflow: 'hidden' }}>
             <motion.h2 className="section-title" variants={textReveal}>
               What our <em>customers carry.</em>
