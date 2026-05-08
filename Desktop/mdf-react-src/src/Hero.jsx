@@ -120,7 +120,7 @@ function DisciplineLabel({ label, opacity, scale, index }) {
    Handles the floor reveal, arch cross-dissolve, and scroll
    cross-fades through hero3 and hero4.
    ============================================================= */
-function HeroImageLayers({ scrollProgress }) {
+const HeroImageLayers = React.memo(function HeroImageLayers({ scrollProgress }) {
   const [archVisible, setArchVisible] = useState(false);
 
   useEffect(() => {
@@ -193,13 +193,13 @@ function HeroImageLayers({ scrollProgress }) {
       />
     </div>
   );
-}
+});
 
 /* =============================================================
    LAYERS 8–9: BRAND ELEMENTS (hero5 badge + hero6 wordmark)
    Appear as floating glassmorphic panels mid-scroll.
    ============================================================= */
-function BrandElements({ scrollProgress }) {
+const BrandElements = React.memo(function BrandElements({ scrollProgress }) {
   const badgeOpacity = useTransform(scrollProgress, [0.03, 0.14], [0, 1]);
   const badgeScale  = useTransform(scrollProgress, [0.03, 0.14], [0.7, 1]);
   const wordmarkOpacity = useTransform(scrollProgress, [0.07, 0.18], [0, 1]);
@@ -216,7 +216,7 @@ function BrandElements({ scrollProgress }) {
           <img
             src="/hero/hero5.png"
             className="w-28 h-28 object-contain"
-            alt="MDF Enterprises"
+            alt=""
             aria-hidden="true"
             draggable="false"
           />
@@ -244,7 +244,7 @@ function BrandElements({ scrollProgress }) {
       </motion.div>
     </div>
   );
-}
+});
 
 /* =============================================================
    LAYER 7: DUST OVERLAY (hero7)
@@ -272,7 +272,7 @@ function DustOverlay() {
    Floating 3D element fades in briefly mid-scroll then fades out.
    Replace SPLINE_SCENE with your published Spline URL.
    ============================================================= */
-function SplineLayer({ scrollProgress }) {
+const SplineLayer = React.memo(function SplineLayer({ scrollProgress }) {
   const splineOpacity = useTransform(
     scrollProgress,
     [0.05, 0.18, 0.45],
@@ -293,7 +293,7 @@ function SplineLayer({ scrollProgress }) {
       </Suspense>
     </motion.div>
   );
-}
+});
 
 /* =============================================================
    MAIN HERO COMPONENT
@@ -311,10 +311,10 @@ export default function Hero() {
 
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 80, damping: 20, mass: 1 });
 
-  useEffect(
-    () => smoothProgress.on('change', (v) => { scrollProgressRef.current = v; }),
-    [smoothProgress]
-  );
+  useEffect(() => {
+    const unsub = smoothProgress.on('change', (v) => { scrollProgressRef.current = v; });
+    return unsub;
+  }, [smoothProgress]);
 
   // --- Text parallax ---
   const titleY       = useTransform(smoothProgress, [0, 0.6],       ['0%', '-40%']);
