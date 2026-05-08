@@ -253,7 +253,7 @@ function BrandElements({ scrollProgress }) {
 function DustOverlay() {
   return (
     <div
-      className="absolute inset-0 z-[16] pointer-events-none overflow-hidden flex items-end justify-center pb-0"
+      className="absolute inset-0 z-[10] pointer-events-none overflow-hidden flex items-end justify-center pb-0"
       aria-hidden="true"
     >
       <img
@@ -281,7 +281,7 @@ function SplineLayer({ scrollProgress }) {
 
   return (
     <motion.div
-      className="absolute inset-0 z-[17] pointer-events-none"
+      className="absolute inset-0 z-[9] pointer-events-none"
       style={{ opacity: splineOpacity }}
     >
       <Suspense fallback={null}>
@@ -367,7 +367,7 @@ export default function Hero() {
           <HeroScene mouseX={mouseX} mouseY={mouseY} scrollProgress={scrollProgressRef} />
         </motion.div>
 
-        {/* Z-8–9: Spline 3D (appears briefly on first scroll) */}
+        {/* Z-9: Spline 3D (appears briefly on first scroll) */}
         <SplineLayer scrollProgress={smoothProgress} />
 
         {/* Z-10: Gold dust drift overlay */}
