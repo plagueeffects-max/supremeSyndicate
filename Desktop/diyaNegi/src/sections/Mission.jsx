@@ -12,10 +12,10 @@ const MISSION_ITEMS = [
 ]
 
 const MISSION_IMGS = [
-  { src: '/images/myMission1.png', fromX: -30 },
-  { src: '/images/myMission2.png', fromX: 30 },
-  { src: '/images/myMission3.png', fromX: 30 },
-  { src: '/images/myMission4.png', fromX: -30 },
+  { src: '/images/myMission1.webp', fromX: -30 },
+  { src: '/images/myMission2.webp', fromX: 30 },
+  { src: '/images/myMission3.webp', fromX: 30 },
+  { src: '/images/myMission4.webp', fromX: -30 },
 ]
 
 export default function Mission() {
