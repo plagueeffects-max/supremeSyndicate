@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import AnimatedLine from '../components/AnimatedLine'
 import MarqueeTrack from '../components/MarqueeTrack'
 import SectionWrapper from '../components/SectionWrapper'
-import { clipRevealDown, fadeUp, VIEWPORT } from '../lib/motion'
+import { clipRevealDown, fadeUp } from '../lib/motion'
 
 export default function Introduction() {
   return (

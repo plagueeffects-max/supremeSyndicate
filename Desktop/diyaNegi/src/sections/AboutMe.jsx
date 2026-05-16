@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion'
 import AnimatedLine from '../components/AnimatedLine'
 import SectionWrapper from '../components/SectionWrapper'
-import { fadeUp, VIEWPORT } from '../lib/motion'
+import { fadeUp } from '../lib/motion'
 
 const imgVariant = {
   hidden: { opacity: 0, scale: 0.95 },
