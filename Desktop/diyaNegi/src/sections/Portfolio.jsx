@@ -1,28 +1,33 @@
 // src/sections/Portfolio.jsx
 import { motion } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import SectionWrapper from '../components/SectionWrapper'
 import { fadeUp } from '../lib/motion'
 
 function SpotlightContainer({ children }) {
   const divRef = useRef(null)
-  const [pos, setPos] = useState({ x: 0, y: 0 })
+  const posRef = useRef({ x: 0, y: 0 })
   const [opacity, setOpacity] = useState(0)
+  const gradientRef = useRef(null)
 
-  const onMouseMove = (e) => {
+  const onMouseMove = useCallback((e) => {
+    if (!divRef.current) return
     const rect = divRef.current.getBoundingClientRect()
-    setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+    posRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    if (gradientRef.current) {
+      gradientRef.current.style.background = `radial-gradient(500px circle at ${posRef.current.x}px ${posRef.current.y}px, rgba(255,255,255,0.05), transparent 55%)`
+    }
     setOpacity(1)
-  }
+  }, [])
+
+  const onMouseLeave = useCallback(() => setOpacity(0), [])
 
   return (
-    <div ref={divRef} onMouseMove={onMouseMove} onMouseLeave={() => setOpacity(0)} className="relative">
+    <div ref={divRef} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave} className="relative">
       <div
+        ref={gradientRef}
         className="absolute inset-0 pointer-events-none rounded-sm transition-opacity duration-500"
-        style={{
-          opacity,
-          background: `radial-gradient(500px circle at ${pos.x}px ${pos.y}px, rgba(255,255,255,0.05), transparent 55%)`,
-        }}
+        style={{ opacity }}
       />
       {children}
     </div>
@@ -33,6 +38,9 @@ export default function Portfolio() {
   const constraintsRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
   const [hasDragged, setHasDragged] = useState(false)
+
+  const onDragStart = useCallback(() => { setIsDragging(true); setHasDragged(true) }, [])
+  const onDragEnd = useCallback(() => setIsDragging(false), [])
 
   return (
     <SectionWrapper id="portfolio">
@@ -66,8 +74,8 @@ export default function Portfolio() {
             dragConstraints={constraintsRef}
             dragElastic={0.1}
             whileDrag={{ scale: 0.98 }}
-            onDragStart={() => { setIsDragging(true); setHasDragged(true) }}
-            onDragEnd={() => setIsDragging(false)}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
             className="flex gap-4 lg:gap-6"
             style={{ cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'pan-y' }}
           >
