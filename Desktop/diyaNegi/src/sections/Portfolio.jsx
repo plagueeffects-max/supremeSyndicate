@@ -81,7 +81,7 @@ export default function Portfolio() {
           >
             <div className="relative shrink-0 w-[65%] lg:w-[55%] h-[60vh] lg:h-[75vh] overflow-hidden">
               <img
-                src="/images/myFavPortfolio1.png"
+                src="/images/myFavPortfolio1.webp"
                 alt="Portfolio 1"
                 loading="lazy"
                 className="w-full h-full object-cover pointer-events-none select-none"
@@ -90,7 +90,7 @@ export default function Portfolio() {
             </div>
             <div className="relative shrink-0 w-[50%] lg:w-[42%] h-[60vh] lg:h-[75vh] overflow-hidden">
               <img
-                src="/images/myFavPortfolio2.png"
+                src="/images/myFavPortfolio2.webp"
                 alt="Portfolio 2"
                 loading="lazy"
                 className="w-full h-full object-cover pointer-events-none select-none"

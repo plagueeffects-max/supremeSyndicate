@@ -20,7 +20,7 @@ export default function ThankYou() {
             </motion.h2>
             <AnimatedLine className="w-32 mb-10" />
 
-            <motion.div variants={fadeUp} className="space-y-5 text-white/45 text-sm lg:text-base leading-relaxed font-light max-w-md">
+            <motion.div variants={fadeUp} className="space-y-5 text-white/65 text-sm lg:text-base leading-relaxed font-light max-w-md">
               <p>
                 Thank you for taking the time to view my portfolio. I truly appreciate your interest
                 in my work, creativity, and content journey.
@@ -47,7 +47,7 @@ export default function ThankYou() {
               className="row-span-2 overflow-hidden"
             >
               <img
-                src="/images/thankYou2.png"
+                src="/images/thankYou2.webp"
                 alt="Thank You"
                 loading="lazy"
                 className="w-full h-full object-cover hover:scale-[1.04] transition-transform duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -60,7 +60,7 @@ export default function ThankYou() {
               className="overflow-hidden"
             >
               <img
-                src="/images/thankYou1.png"
+                src="/images/thankYou1.webp"
                 alt="Thank You"
                 loading="lazy"
                 className="w-full h-full object-cover hover:scale-[1.04] transition-transform duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -74,7 +74,7 @@ export default function ThankYou() {
               className="overflow-hidden"
             >
               <img
-                src="/images/thankYou3.png"
+                src="/images/thankYou3.webp"
                 alt="Thank You"
                 loading="lazy"
                 className="w-full h-full object-cover hover:scale-[1.04] transition-transform duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
