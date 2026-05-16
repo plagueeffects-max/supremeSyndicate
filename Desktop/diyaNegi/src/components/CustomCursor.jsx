@@ -1,13 +1,14 @@
 // src/components/CustomCursor.jsx
 import { useEffect, useRef } from 'react'
 
+const isTouch = typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches
+
 export default function CustomCursor() {
   const dotRef = useRef(null)
   const ringRef = useRef(null)
 
   useEffect(() => {
-    const isTouchDevice = window.matchMedia('(hover: none)').matches
-    if (isTouchDevice) return
+    if (isTouch) return
 
     let ringX = window.innerWidth / 2
     let ringY = window.innerHeight / 2
@@ -40,6 +41,8 @@ export default function CustomCursor() {
       cancelAnimationFrame(animId)
     }
   }, [])
+
+  if (isTouch) return null
 
   return (
     <>
