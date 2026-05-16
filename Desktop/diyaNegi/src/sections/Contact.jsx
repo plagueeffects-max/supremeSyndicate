@@ -79,7 +79,7 @@ export default function Contact() {
             src="/images/myContact1.png"
             alt="Contact"
             loading="lazy"
-            className="w-full h-full object-cover hover:scale-[1.04] transition-transform duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
           />
         </motion.div>
 

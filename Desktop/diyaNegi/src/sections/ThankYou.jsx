@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion'
 import AnimatedLine from '../components/AnimatedLine'
 import SectionWrapper from '../components/SectionWrapper'
-import { clipRevealDown, clipRevealUp, fadeUp } from '../lib/motion'
+import { clipRevealDown, clipRevealUp, fadeUp, VIEWPORT } from '../lib/motion'
 
 export default function ThankYou() {
   return (
@@ -69,7 +69,8 @@ export default function ThankYou() {
 
             {/* thankYou3: bottom right */}
             <motion.div
-              variants={fadeUp}
+              variants={clipRevealUp}
+              viewport={VIEWPORT}
               className="overflow-hidden"
             >
               <img
@@ -87,7 +88,7 @@ export default function ThankYou() {
 
       {/* Footer */}
       <footer className="border-t border-white/[0.06] py-8 px-8 lg:px-24 xl:px-32">
-        <p className="text-center text-[9px] font-mono text-white/20 tracking-widest uppercase">
+        <p className="text-center text-[9px] font-mono text-white/25 tracking-widest uppercase">
           © 2026 Diya Negi · @dianegi_
         </p>
       </footer>

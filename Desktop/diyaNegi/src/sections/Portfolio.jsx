@@ -65,7 +65,7 @@ export default function Portfolio() {
             drag="x"
             dragConstraints={constraintsRef}
             dragElastic={0.1}
-            whileDrag={{ scale: 0.99 }}
+            whileDrag={{ scale: 0.98 }}
             onDragStart={() => { setIsDragging(true); setHasDragged(true) }}
             onDragEnd={() => setIsDragging(false)}
             className="flex gap-4 lg:gap-6"
