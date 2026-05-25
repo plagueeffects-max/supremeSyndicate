@@ -21,8 +21,7 @@ export default function Hero() {
         </p>
 
         <h1
-          className="text-[36px] md:text-[56px] leading-[1.08] tracking-[-0.02em] font-light text-[#000] m-0"
-          style={{ fontFamily: "'Cormorant Garamond', ui-serif, Georgia, serif" }}
+          className="font-display text-[36px] md:text-[56px] leading-[1.08] tracking-[-0.02em] font-light text-[#000] m-0"
         >
           Kashmir's Premier Institutional Supply Partner.
         </h1>
@@ -55,8 +54,7 @@ export default function Hero() {
               key={alt}
               src={src}
               alt={alt}
-              className="h-7 w-auto"
-              style={{ filter: 'grayscale(1) opacity(0.5)' }}
+              className="h-7 w-auto grayscale opacity-50"
             />
           ))}
         </div>
