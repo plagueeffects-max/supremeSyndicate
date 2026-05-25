@@ -2068,7 +2068,7 @@ body.dark-hero-active .pill-blue {
 
 }
 
-.fcc-header h3 {
+.fcc-header h2 {
 
   font-size: 2.6rem;
 
@@ -2084,7 +2084,7 @@ body.dark-hero-active .pill-blue {
 
 }
 
-.fcc-header h3 span {
+.fcc-header h2 span {
 
   background: linear-gradient(135deg, #a5c4ff 0%, #d4aaff 100%);
 
@@ -3209,7 +3209,7 @@ body.nav-open .nmo-cta              { animation: slideInLink 0.45s 0.36s cubic-b
   .hc-content h3 {
     font-size: 1.5rem;
   }
-  .fcc-header h3 {
+  .fcc-header h2 {
     font-size: 2rem;
   }
   .fcc-value {

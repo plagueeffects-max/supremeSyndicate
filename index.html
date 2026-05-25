@@ -86,16 +86,17 @@
 
     <header class="hero">
         <!-- Animated Video Background with Poster -->
-        <video autoplay muted loop playsinline preload="metadata" class="hero-bg-video" id="heroVideo">
+        <video autoplay muted loop playsinline preload="metadata" class="hero-bg-video" id="heroVideo" aria-hidden="true">
             <source src="Assets/Hero/bg.webm" type="video/webm">
+            <track kind="captions" src="Assets/captions.vtt" srclang="en" label="English">
         </video>
 
         <!-- Floating 3D Assets for Awwwards Aesthetic -->
         <div class="hero-float-container">
             <img src="Assets/Hero/1.webp" class="float-cell fc-1" data-speed="-0.04" alt="Floating cell structure 1" width="256" height="258">
-            <img src="Assets/Hero/2.webp" class="float-cell fc-2" data-speed="0.06" alt="Floating cell structure 2" width="600" height="899">
-            <img src="Assets/Hero/3.webp" class="float-cell fc-3" data-speed="-0.08" alt="Floating cell structure 3" width="205" height="208">
-            <img src="Assets/Hero/4.webp" class="float-cell fc-4" data-speed="0.03" alt="Floating cell structure 4" width="250" height="181">
+            <img src="Assets/Hero/2.webp" class="float-cell fc-2" data-speed="0.06" alt="Floating cell structure 2" width="500" height="749">
+            <img src="Assets/Hero/3.webp" class="float-cell fc-3" data-speed="-0.08" alt="Floating cell structure 3" width="180" height="182">
+            <img src="Assets/Hero/4.webp" class="float-cell fc-4" data-speed="0.03" alt="Floating cell structure 4" width="200" height="144">
             <img src="Assets/Hero/5.webp" class="float-cell fc-5" data-speed="0.05" alt="Floating cell structure 5" width="240" height="234">
             <img src="Assets/Hero/6.webp" class="float-cell fc-complex" data-speed="0.03" alt="Floating cell structure 6" fetchpriority="high" width="400" height="262">
         </div>
@@ -134,15 +135,15 @@
 
         <div class="container">
             <div class="brands-grid">
-                <div class="brand-tile"><img src="Assets/merck.webp" alt="Merck logo" loading="lazy" width="300" height="86"></div>
-                <div class="brand-tile"><img src="Assets/Sigma-Aldrich-logo.webp" alt="Sigma-Aldrich logo" loading="lazy" width="280" height="56"></div>
+                <div class="brand-tile"><img src="Assets/merck.webp" alt="Merck logo" loading="lazy" width="180" height="51"></div>
+                <div class="brand-tile"><img src="Assets/Sigma-Aldrich-logo.webp" alt="Sigma-Aldrich logo" loading="lazy" width="200" height="40"></div>
                 <div class="brand-tile"><img src="Assets/HiMedia-Logo.webp" alt="HiMedia logo" loading="lazy" width="300" height="71"></div>
-                <div class="brand-tile"><img src="Assets/Loba.webp" alt="Loba Chemie logo" loading="lazy" width="228" height="99"></div>
+                <div class="brand-tile"><img src="Assets/Loba.webp" alt="Loba Chemie logo" loading="lazy" width="130" height="56"></div>
                 <div class="brand-tile"><img src="Assets/Tosoh_logo..webp" alt="Tosoh logo" loading="lazy" width="100" height="127"></div>
-                <div class="brand-tile"><img src="Assets/moxcare-logo.webp" alt="Moxcare logo" loading="lazy" width="300" height="84"></div>
-                <div class="brand-tile"><img src="Assets/Abdoslogo.webp" alt="Abdos logo" loading="lazy" width="200" height="127"></div>
-                <div class="brand-tile"><img src="Assets/OmsonsLogo.webp" alt="Omsons logo" loading="lazy" width="220" height="106"></div>
-                <div class="brand-tile"><img src="Assets/Rivieralogo.webp" alt="Riviera logo" loading="lazy" width="260" height="104"></div>
+                <div class="brand-tile"><img src="Assets/moxcare-logo.webp" alt="Moxcare logo" loading="lazy" width="200" height="56"></div>
+                <div class="brand-tile"><img src="Assets/Abdoslogo.webp" alt="Abdos logo" loading="lazy" width="100" height="63"></div>
+                <div class="brand-tile"><img src="Assets/OmsonsLogo.webp" alt="Omsons logo" loading="lazy" width="120" height="57"></div>
+                <div class="brand-tile"><img src="Assets/Rivieralogo.webp" alt="Riviera logo" loading="lazy" width="140" height="56"></div>
                 <div class="brand-tile"><img src="Assets/real gene.webp" alt="Real Gene logo" loading="lazy" width="300" height="65"></div>
             </div>
         </div>
@@ -350,7 +351,7 @@
                 <!-- Header -->
                 <div class="fcc-header">
                     <div class="fcc-badge">Get in Touch</div>
-                    <h3>Let's work<br><span>together.</span></h3>
+                    <h2>Let's work<br><span>together.</span></h2>
                     <p class="fcc-tagline">Reach out to our team and we'll get back to you within 24 hours.</p>
                 </div>
 
