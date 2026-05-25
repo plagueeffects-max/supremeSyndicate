@@ -1,5 +1,11 @@
 const WA_URL = 'https://wa.me/917006252334'
 
+const STATS = [
+  { value: '25+', label: 'Years of Service' },
+  { value: '100+', label: 'Institutions Served' },
+  { value: '9', label: 'Premium Brands' },
+]
+
 const TRUST_BADGES = [
   { src: '/assets/msmeLogo.webp',     alt: 'MSME Registered' },
   { src: '/assets/gemLogo.webp',      alt: 'GEM Portal' },
@@ -15,21 +21,30 @@ const WaIcon = () => (
 export default function Hero() {
   return (
     <section className="flex flex-col items-center text-center px-6 pt-[120px] pb-[96px]">
-      <div className="max-w-[820px] w-full">
-        <p className="text-sm text-[#777169] tracking-wide mb-4">
+      <div className="max-w-[860px] w-full">
+
+        {/* Eyebrow with ember dot */}
+        <p className="inline-flex items-center gap-2 text-[11px] text-[#777169] uppercase tracking-[0.2em] mb-8">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#ff4704] flex-shrink-0" />
           Since 1997 · Across Kashmir
         </p>
 
-        <h1
-          className="font-display text-[36px] md:text-[56px] leading-[1.08] tracking-[-0.02em] font-light text-[#000] m-0"
-        >
-          Kashmir's Premier Institutional Supply Partner.
+        {/* Display headline */}
+        <h1 className="font-display text-[52px] md:text-[76px] lg:text-[84px] leading-[1.03] tracking-[-0.02em] font-light text-[#000] m-0">
+          Kashmir's Premier<br />Institutional<br className="hidden md:block" /> Supply Partner.
         </h1>
 
-        <p className="text-base text-[#777169] mt-4 mb-0">
-          Sports · Fitness · Music · Awards & Trophies
-        </p>
+        {/* Category tags */}
+        <div className="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 mt-6 mb-0">
+          {['Sports', 'Fitness', 'Music', 'Awards & Trophies'].map((cat, i, arr) => (
+            <span key={cat} className="flex items-center gap-3">
+              <span className="text-sm text-[#b1b0b0]">{cat}</span>
+              {i < arr.length - 1 && <span className="w-1 h-1 rounded-full bg-[#e5e5e5]" />}
+            </span>
+          ))}
+        </div>
 
+        {/* CTAs */}
         <div className="flex items-center justify-center gap-3 mt-8 flex-wrap">
           <a
             href={WA_URL}
@@ -48,16 +63,26 @@ export default function Hero() {
           </a>
         </div>
 
-        <div className="flex items-center justify-center gap-6 mt-10 flex-wrap">
-          {TRUST_BADGES.map(({ src, alt }) => (
-            <img
-              key={alt}
-              src={src}
-              alt={alt}
-              className="h-7 w-auto grayscale opacity-50"
-            />
+        {/* Stats row */}
+        <div className="mt-14 pt-10 border-t border-[#e5e5e5] flex items-center justify-center">
+          {STATS.map(({ value, label }, i) => (
+            <div key={label} className="flex items-center">
+              {i > 0 && <div className="w-px h-10 bg-[#e5e5e5] mx-8 md:mx-12" />}
+              <div className="text-center">
+                <p className="font-display text-[44px] md:text-[52px] leading-none font-light text-[#000] mb-1">{value}</p>
+                <p className="text-[10px] text-[#b1b0b0] uppercase tracking-[0.15em]">{label}</p>
+              </div>
+            </div>
           ))}
         </div>
+
+        {/* Trust badges */}
+        <div className="flex items-center justify-center gap-6 mt-8 flex-wrap">
+          {TRUST_BADGES.map(({ src, alt }) => (
+            <img key={alt} src={src} alt={alt} className="h-7 w-auto grayscale opacity-40" />
+          ))}
+        </div>
+
       </div>
     </section>
   )

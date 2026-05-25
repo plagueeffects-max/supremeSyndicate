@@ -4,7 +4,7 @@ import CtaBand from '../CtaBand'
 describe('CtaBand', () => {
   it('renders the headline', () => {
     render(<CtaBand />)
-    expect(screen.getByText(/Ready to equip your institution/)).toBeInTheDocument()
+    expect(screen.getByText(/Ready to equip/)).toBeInTheDocument()
   })
 
   it('renders WhatsApp CTA with correct href', () => {

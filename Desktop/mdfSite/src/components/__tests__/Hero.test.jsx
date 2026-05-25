@@ -5,7 +5,7 @@ import Hero from '../Hero'
 describe('Hero', () => {
   it('renders the main headline', () => {
     render(<Hero />)
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent("Kashmir's Premier Institutional Supply Partner")
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Kashmir.*Premier.*Supply Partner/i)
   })
 
   it('WhatsApp quote button links to correct number', () => {

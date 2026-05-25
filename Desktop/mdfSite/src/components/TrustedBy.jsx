@@ -12,21 +12,26 @@ const CLIENTS = [
 export default function TrustedBy() {
   return (
     <section id="clients" className="max-w-[1200px] mx-auto px-6 pb-[96px]">
-      <div className="flex items-center justify-between mb-10 border-t border-[#e5e5e5] pt-10">
-        <p className="text-sm text-[#777169] m-0">
-          Trusted by institutions across Kashmir
-        </p>
-        <a
-          href="https://wa.me/917006252334"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-[#000] font-medium px-4 py-2 rounded-full border border-[#e5e5e5] bg-[#fff] no-underline hover:bg-[#f5f3f1] transition-colors duration-150"
-        >
-          Get in Touch
-        </a>
+      <div className="border-t border-[#e5e5e5] pt-10 mb-10">
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-[11px] text-[#777169] uppercase tracking-[0.2em] mb-3">Trusted By</p>
+            <h2 className="font-display text-[32px] md:text-[44px] font-light text-[#000] leading-[1.1] m-0">
+              Leading institutions<br className="hidden md:block" /> across Kashmir.
+            </h2>
+          </div>
+          <a
+            href="https://wa.me/917006252334"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-[#000] font-medium px-5 py-2.5 rounded-full border border-[#e5e5e5] bg-[#fff] no-underline hover:bg-[#f5f3f1] transition-colors duration-150 flex-shrink-0"
+          >
+            Get in Touch
+          </a>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+      <div className="flex flex-wrap items-center justify-center gap-10 md:gap-14">
         {CLIENTS.map(({ src, alt }) => (
           <img
             key={alt}

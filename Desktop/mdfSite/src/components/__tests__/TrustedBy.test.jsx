@@ -5,7 +5,7 @@ import TrustedBy from '../TrustedBy'
 describe('TrustedBy', () => {
   it('renders the section heading', () => {
     render(<TrustedBy />)
-    expect(screen.getByText(/trusted by institutions/i)).toBeInTheDocument()
+    expect(screen.getByText(/Leading institutions/i)).toBeInTheDocument()
   })
 
   it('renders all 8 client logos', () => {

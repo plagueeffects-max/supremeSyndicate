@@ -8,13 +8,22 @@ const WaIcon = () => (
 
 export default function CtaBand() {
   return (
-    <section id="contact" className="bg-[#000] py-[96px]">
-      <div className="max-w-[1200px] mx-auto px-6 text-center">
-        <p className="text-sm text-[#fdfcfc] opacity-60 mb-4">Get in Touch</p>
-        <h2 className="font-display text-[40px] md:text-[48px] leading-[1.1] font-light text-[#fdfcfc] mb-4">
-          Ready to equip your institution?
+    <section id="contact" className="bg-[#000] py-[112px] overflow-hidden relative">
+      {/* Decorative large background year */}
+      <p
+        className="absolute inset-0 flex items-center justify-center font-display font-light leading-none select-none pointer-events-none text-white"
+        style={{ fontSize: 'clamp(120px, 25vw, 320px)', opacity: 0.03 }}
+        aria-hidden="true"
+      >
+        1997
+      </p>
+
+      <div className="relative max-w-[1200px] mx-auto px-6 text-center">
+        <p className="text-[11px] text-[#fdfcfc] opacity-40 uppercase tracking-[0.2em] mb-6">Get in Touch</p>
+        <h2 className="font-display text-[44px] md:text-[64px] lg:text-[72px] leading-[1.0] font-light text-[#fdfcfc] mb-6 tracking-[-0.01em]">
+          Ready to equip<br />your institution?
         </h2>
-        <p className="text-sm text-[#fdfcfc] opacity-60 mb-8 max-w-[480px] mx-auto">
+        <p className="text-sm text-[#fdfcfc] opacity-50 mb-10 max-w-[440px] mx-auto leading-[1.7]">
           Drop us a message on WhatsApp — we respond within the hour.
         </p>
         <a
@@ -22,7 +31,7 @@ export default function CtaBand() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="WhatsApp"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#fdfcfc] text-[#000] text-sm font-medium no-underline hover:bg-[#f5f3f1] transition-colors duration-150"
+          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#fdfcfc] text-[#000] text-sm font-medium no-underline hover:bg-[#f5f3f1] transition-colors duration-150"
         >
           <WaIcon />
           WhatsApp Us
