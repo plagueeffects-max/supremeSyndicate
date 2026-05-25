@@ -30,7 +30,7 @@ export default function Vision() {
                 <span className="text-5xl lg:text-6xl font-black tracking-[-0.04em] shrink-0 text-white/20">
                   0{i + 1}.
                 </span>
-                <p className="text-sm lg:text-base text-white/65 leading-relaxed pt-2 font-light">
+                <p className="text-sm lg:text-base text-white/45 leading-relaxed pt-2 font-light">
                   {text}
                 </p>
               </motion.div>
@@ -41,7 +41,7 @@ export default function Vision() {
         {/* Right: image */}
         <div className="w-full lg:w-[45%] relative h-[60vh] lg:h-[85vh]">
           <img
-            src="/images/myVision1.webp"
+            src="/images/myVision1.png"
             alt=""
             aria-hidden="true"
             loading="lazy"
@@ -52,7 +52,7 @@ export default function Vision() {
             className="absolute inset-0 overflow-hidden"
           >
             <img
-              src="/images/myVision2.webp"
+              src="/images/myVision2.png"
               alt="My Vision"
               loading="lazy"
               className="w-full h-full object-cover hover:scale-[1.04] transition-transform duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"

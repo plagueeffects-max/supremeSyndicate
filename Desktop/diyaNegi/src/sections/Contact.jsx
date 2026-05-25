@@ -76,7 +76,7 @@ export default function Contact() {
           className="w-full lg:w-[45%] h-[65vh] lg:h-auto overflow-hidden"
         >
           <img
-            src="/images/myContact1.webp"
+            src="/images/myContact1.png"
             alt="Contact"
             loading="lazy"
             className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"

@@ -63,7 +63,7 @@ export default function Introduction() {
           className="w-full lg:w-[45%] h-[70vh] lg:h-auto overflow-hidden"
         >
           <img
-            src="/images/introduction1.webp"
+            src="/images/introduction1.png"
             alt="Introduction"
             loading="lazy"
             className="w-full h-full object-cover hover:scale-[1.03] transition-transform duration-[1500ms] ease-[cubic-bezier(0.16,1,0.3,1)]"

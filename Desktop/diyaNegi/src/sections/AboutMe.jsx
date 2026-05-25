@@ -20,7 +20,7 @@ export default function AboutMe() {
 
         {/* 3-image grid */}
         <div className="grid grid-cols-3 gap-3 lg:gap-5 h-[45vh] lg:h-[60vh]">
-          {['/images/aboutMe1.webp', '/images/aboutMe2.webp', '/images/aboutMe3.webp'].map((src, i) => (
+          {['/images/aboutMe1.png', '/images/aboutMe2.png', '/images/aboutMe3.png'].map((src, i) => (
             <motion.div
               key={src}
               custom={i}
