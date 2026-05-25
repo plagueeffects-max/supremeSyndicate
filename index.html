@@ -36,8 +36,8 @@
         })();
     </script>
 
-    <!-- Google Fonts (replaces @import in style.css) -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap">
+    <!-- Google Fonts loaded asynchronously to prevent render blocking -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" media="print" onload="this.media='all'">
 
     <link rel="stylesheet" href="css/style.min.css">
 
@@ -45,7 +45,6 @@
     <script defer src="https://unpkg.com/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- iOS patch: runs after lenis.min.js loads (so window.Lenis exists to replace)
          but before main.js (so new Lenis() gets the native stub, not real Lenis) -->
     <script defer src="js/ios-patch.js"></script>
@@ -94,10 +93,16 @@
         <!-- Floating 3D Assets for Awwwards Aesthetic -->
         <div class="hero-float-container">
             <img src="Assets/Hero/1.webp" class="float-cell fc-1" data-speed="-0.04" alt="Floating cell structure 1" width="256" height="258">
-            <img src="Assets/Hero/2.webp" class="float-cell fc-2" data-speed="0.06" alt="Floating cell structure 2" width="500" height="749">
+            <picture class="float-cell fc-2" data-speed="0.06">
+                <source media="(max-width: 768px)" srcset="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'></svg>">
+                <img src="Assets/Hero/2.webp" alt="Floating cell structure 2" width="500" height="749" style="width: 100%; height: auto; object-fit: contain;">
+            </picture>
             <img src="Assets/Hero/3.webp" class="float-cell fc-3" data-speed="-0.08" alt="Floating cell structure 3" width="180" height="182">
             <img src="Assets/Hero/4.webp" class="float-cell fc-4" data-speed="0.03" alt="Floating cell structure 4" width="200" height="144">
-            <img src="Assets/Hero/5.webp" class="float-cell fc-5" data-speed="0.05" alt="Floating cell structure 5" width="240" height="234">
+            <picture class="float-cell fc-5" data-speed="0.05">
+                <source media="(max-width: 768px)" srcset="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'></svg>">
+                <img src="Assets/Hero/5.webp" alt="Floating cell structure 5" width="240" height="234" style="width: 100%; height: auto; object-fit: contain;">
+            </picture>
             <img src="Assets/Hero/6.webp" class="float-cell fc-complex" data-speed="0.03" alt="Floating cell structure 6" fetchpriority="high" width="400" height="262">
         </div>
 

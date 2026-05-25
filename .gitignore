@@ -49,3 +49,10 @@ coverage/
 .antigravity/
 .gemini/
 .DS_Store
+
+# Lighthouse reports
+lighthouseDesktop.json
+lighthouseMobile.json
+
+# Local workspace / tool metadata
+.gstack/
