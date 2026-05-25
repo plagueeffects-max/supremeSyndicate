@@ -59,3 +59,10 @@ body {
 .marquee-track:hover {
   animation-play-state: paused;
 }
+
+@media (max-width: 767px) {
+  .category-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+}
