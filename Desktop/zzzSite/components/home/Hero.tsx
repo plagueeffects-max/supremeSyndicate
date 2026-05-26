@@ -1,32 +1,32 @@
 'use client'
 
 import Link from 'next/link'
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion'
+import { motion, useScroll, useTransform, useReducedMotion, type Variants } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { useRef } from 'react'
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: {},
   show: {
     transition: { staggerChildren: 0.15, delayChildren: 0.4 },
   },
 }
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.9, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 0.9, ease: 'easeOut' },
   },
 }
 
-const zoomIn = {
+const zoomIn: Variants = {
   hidden: { opacity: 0, scale: 1.08 },
   show: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 1.2, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: 1.2, ease: 'easeOut' },
   },
 }
 
