@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -15,8 +17,17 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MDF Enterprises",
-  description: "Sports Equipment, Fitness & Wellness, Musical Instruments, Awards & Trophies",
+  title: "MDF Enterprises — Sports · Fitness · Music · Awards",
+  description: "Premium sports equipment, fitness gear, musical instruments, and awards. Trusted by institutions and individuals across India.",
+  icons: {
+    icon: "/mdfFavicon.png",
+    apple: "/mdfFavicon.png",
+  },
+  openGraph: {
+    title: "MDF Enterprises",
+    description: "Where Excellence Meets Every Domain",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -29,7 +40,11 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="bg-deep text-white font-body antialiased min-h-full flex flex-col">
+        <Navbar />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }
