@@ -13,6 +13,7 @@ const config: Config = {
     '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: { jsx: 'react-jsx' } }],
   },
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  cacheDirectory: '<rootDir>/.jest-cache',
 }
 
 export default config
