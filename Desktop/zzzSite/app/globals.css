@@ -48,6 +48,33 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@theme {
+  /* Brand colors */
+  --color-navy: #0d1f4a;
+  --color-navy-light: #1a3a6b;
+  --color-deep: #050e24;
+  --color-gold: #C9A227;
+  --color-gold-dark: #a07d10;
+
+  /* Typography — CSS vars set by next/font in layout.tsx */
+  --font-display: var(--font-playfair), Georgia, serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+
+  /* Marquee animations */
+  --animate-marquee: marquee 35s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 40s linear infinite;
+
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes marquee-reverse {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -119,12 +146,63 @@
 
 @layer base {
   * {
+    box-sizing: border-box;
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
+    scroll-behavior: smooth;
     @apply font-sans;
+  }
+
+  body {
+    background-color: #050e24;
+    color: #ffffff;
+    font-family: var(--font-body), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(201, 162, 39, 0.3);
+    color: #ffffff;
+  }
+}
+
+@layer utilities {
+  .label-gold {
+    @apply text-xs tracking-[0.3em] uppercase font-medium;
+    color: color-mix(in srgb, #C9A227 80%, transparent);
+  }
+
+  .section-padding {
+    @apply px-6 md:px-12 lg:px-24 py-20 md:py-28;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-gold text-deep px-6 py-3 text-sm font-bold tracking-widest uppercase rounded-sm hover:bg-gold-dark transition-colors duration-200;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 border border-white/30 text-white px-6 py-3 text-sm tracking-widest uppercase rounded-sm hover:border-gold/60 hover:text-gold transition-colors duration-200;
+  }
+
+  .btn-dark {
+    @apply inline-flex items-center gap-2 bg-deep text-white px-6 py-3 text-sm font-bold tracking-widest uppercase rounded-sm hover:bg-navy transition-colors duration-200;
+  }
+
+  .gold-divider {
+    @apply w-10 h-px bg-gold my-4;
+  }
+
+  /* Pause marquee on hover */
+  .pause-on-hover:hover .animate-marquee,
+  .pause-on-hover:hover .animate-marquee-reverse {
+    animation-play-state: paused;
+  }
+
+  /* Perspective for 3D card tilts */
+  .perspective-1000 {
+    perspective: 1000px;
   }
 }
