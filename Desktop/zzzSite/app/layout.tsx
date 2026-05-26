@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { Toaster } from "sonner";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -44,6 +45,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <Toaster theme="dark" toastOptions={{ style: { background: '#0d1f4a', border: '1px solid rgba(201,162,39,0.2)', color: '#fff' } }} />
       </body>
     </html>
   );
