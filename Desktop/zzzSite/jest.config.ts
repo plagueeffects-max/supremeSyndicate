@@ -2,7 +2,7 @@ import type { Config } from 'jest'
 
 const config: Config = {
   testEnvironment: 'jsdom',
-  setupFilesAfterFramework: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '\\.(webp|png|jpg|jpeg|mp4|svg)$': '<rootDir>/__mocks__/fileMock.ts',
