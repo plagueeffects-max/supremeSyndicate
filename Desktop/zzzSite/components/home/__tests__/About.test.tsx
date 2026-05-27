@@ -1,10 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { About } from '@/components/home/About'
 
 jest.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...p }: any) => <div {...p}>{children}</div>,
     section: ({ children, ...p }: any) => <section {...p}>{children}</section>,
+    p: ({ children, ...p }: any) => <p {...p}>{children}</p>,
+    h2: ({ children, ...p }: any) => <h2 {...p}>{children}</h2>,
   },
   AnimatePresence: ({ children }: any) => <>{children}</>,
   useReducedMotion: () => false,
@@ -14,23 +16,31 @@ jest.mock('framer-motion', () => ({
   animate: () => ({ stop: () => {} }),
 }))
 
+jest.mock('@/components/ui/CountUp', () => ({
+  CountUp: ({ target, suffix }: { target: number; suffix?: string }) => (
+    <span>{target}{suffix}</span>
+  ),
+}))
+
 describe('About', () => {
-  it('renders the section heading', () => {
+  it('renders the about section heading', () => {
     render(<About />)
-    expect(screen.getByText(/about mdf/i)).toBeInTheDocument()
+    expect(screen.getByText(/about mdf enterprises/i)).toBeInTheDocument()
   })
 
-  it('opens overlay when Learn Our Story is clicked', () => {
+  it('renders the main headline', () => {
     render(<About />)
-    const btn = screen.getByRole('button', { name: /learn our story/i })
-    fireEvent.click(btn)
-    expect(screen.getByText(/our story/i)).toBeInTheDocument()
+    expect(screen.getByText(/more than a supplier/i)).toBeInTheDocument()
   })
 
-  it('closes overlay when close button is clicked', () => {
+  it('renders stat values', () => {
     render(<About />)
-    fireEvent.click(screen.getByRole('button', { name: /learn our story/i }))
-    fireEvent.click(screen.getByRole('button', { name: /close/i }))
-    expect(screen.queryByText(/founded with a singular vision/i)).not.toBeInTheDocument()
+    expect(screen.getByText('18+')).toBeInTheDocument()
+  })
+
+  it('renders feature list items', () => {
+    render(<About />)
+    expect(screen.getByText('Wide Product Range')).toBeInTheDocument()
+    expect(screen.getByText('Expert Installation')).toBeInTheDocument()
   })
 })

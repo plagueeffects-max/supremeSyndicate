@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { ProductsHero } from '@/components/products/ProductsHero'
 import { ProductGrid } from '@/components/products/ProductGrid'
+import { ProductsFeaturesBand } from '@/components/products/ProductsFeaturesBand'
 
 export const metadata: Metadata = {
   title: 'Products — MDF Enterprises',
@@ -10,11 +11,11 @@ export const metadata: Metadata = {
 
 export default function ProductsPage() {
   return (
-    <>
+    <div className="bg-bg-primary">
       <ProductsHero />
       <Suspense fallback={null}>
         <ProductGrid />
       </Suspense>
-    </>
+    </div>
   )
 }
