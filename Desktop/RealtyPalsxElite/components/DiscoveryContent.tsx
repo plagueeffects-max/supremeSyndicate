@@ -51,6 +51,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
   const [chatTurnCount, setChatTurnCount] = useState(0);
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'SHORTLIST' | 'ADVISOR' | 'PROPERTY_DETAIL' | 'DECISION'>('DISCOVERY');
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [resolvedFields, setResolvedFields] = useState<{
     property_type?: boolean;
     bhk?: boolean;
@@ -239,10 +240,12 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
     setCarouselIndexes({});
     if (userId) {
       try {
-        await fetch(`${API_BASE}/chat/intent`, {
+        const res = await fetch(`${API_BASE}/chat/intent`, {
           method: 'DELETE',
           headers: { 'X-User-Id': userId },
         });
+        const data = await res.json();
+        if (data.session_id) setSessionId(data.session_id);
       } catch (e) {
         console.error('Failed to reset intent:', e);
       }
@@ -266,18 +269,47 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
     })();
   }, [searchParams, userId]);
 
-  // Initialize with welcome message
+  // Initialize: fetch session from server and restore history
   useEffect(() => {
-    if (!isInitialized && userId && searchParams.get('new') !== '1') {
-      const welcomeMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        type: 'ai',
-        content: "Hey, I am RealtyPal at your assistance, tell me how can I help you?",
-        timestamp: new Date().toISOString(),
-      };
-      setChatHistory([welcomeMessage]);
-      setIsInitialized(true);
-    }
+    if (!userId || isInitialized || searchParams.get('new') === '1') return;
+
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/chat/session`, {
+          headers: { 'X-User-Id': userId },
+        });
+        if (!res.ok) throw new Error('session fetch failed');
+        const data = await res.json();
+
+        setSessionId(data.session_id);
+
+        if (data.messages && data.messages.length > 0) {
+          const restored: ChatMessage[] = data.messages.map((m: { id: string; role: string; content: string; created_at: string }) => ({
+            id: m.id,
+            type: m.role === 'user' ? 'user' : 'ai',
+            content: m.content,
+            timestamp: m.created_at,
+          }));
+          setChatHistory(restored);
+        } else {
+          setChatHistory([{
+            id: crypto.randomUUID(),
+            type: 'ai',
+            content: "Hey, I am RealtyPal at your assistance, tell me how can I help you?",
+            timestamp: new Date().toISOString(),
+          }]);
+        }
+      } catch {
+        setChatHistory([{
+          id: crypto.randomUUID(),
+          type: 'ai',
+          content: "Hey, I am RealtyPal at your assistance, tell me how can I help you?",
+          timestamp: new Date().toISOString(),
+        }]);
+      } finally {
+        setIsInitialized(true);
+      }
+    })();
   }, [userId, isInitialized, searchParams]);
 
   // Expose reset function for Sidebar "New Chat"
@@ -315,7 +347,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
           'Content-Type': 'application/json',
           'X-User-Id': userId,
         },
-        body: JSON.stringify({ message: currentInput }),
+        body: JSON.stringify({ message: currentInput, session_id: sessionId }),
       });
 
       if (!response.ok) {
@@ -344,6 +376,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
           : "I'll ask a few quick questions to narrow this down.";
 
       if (data.chatPhase) setChatPhase(data.chatPhase);
+      if (data.session_id) setSessionId(data.session_id);
       if (data.next_expected_field !== undefined) setNextExpectedField(data.next_expected_field);
       if (data.resolvedFields) setResolvedFields(data.resolvedFields);
 
@@ -416,7 +449,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({ message: userMsg }),
+        body: JSON.stringify({ message: userMsg, session_id: sessionId }),
       });
 
       if (!response.ok) throw new Error('Failed to regenerate');
@@ -480,7 +513,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({ message, quickReply: { field, value } }),
+        body: JSON.stringify({ message, session_id: sessionId }),
       });
 
       if (!response.ok) throw new Error('Failed to get chat response');
@@ -498,6 +531,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
           : "I'll ask a few quick questions to narrow this down.";
 
       if (data.chatPhase) setChatPhase(data.chatPhase);
+      if (data.session_id) setSessionId(data.session_id);
       if (data.next_expected_field !== undefined) setNextExpectedField(data.next_expected_field);
       if (data.resolvedFields) setResolvedFields(data.resolvedFields);
 
