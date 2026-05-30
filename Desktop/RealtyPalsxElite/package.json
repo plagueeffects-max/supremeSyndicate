@@ -16,6 +16,9 @@
     "test": "jest",
     "test:watch": "jest --watch"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@fontsource/outfit": "^5.2.8",
     "@prisma/client": "^5.20.0",
