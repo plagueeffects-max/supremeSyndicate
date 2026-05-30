@@ -9,5 +9,9 @@ export async function DELETE(req: NextRequest) {
 
   await prisma.userMemory.deleteMany({ where: { user_id: userId } })
 
-  return NextResponse.json({ ok: true })
+  const newSession = await prisma.chatSession.create({
+    data: { user_id: userId },
+  })
+
+  return NextResponse.json({ ok: true, session_id: newSession.id })
 }
