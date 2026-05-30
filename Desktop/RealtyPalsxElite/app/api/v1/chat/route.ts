@@ -10,13 +10,15 @@ import {
 } from '@/lib/ai/intentManager'
 import { searchProjects } from '@/server/repositories/projectRepository'
 
+const MAX_HISTORY = 12
+
 export async function POST(req: NextRequest) {
   const userId = req.headers.get('X-User-Id')
   if (!userId) {
     return NextResponse.json({ error: 'X-User-Id header required' }, { status: 400 })
   }
 
-  let body: { message?: string; quickReply?: { field: string; value: string } }
+  let body: { message?: string; session_id?: string }
   try {
     body = await req.json()
   } catch {
@@ -28,7 +30,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'message is required' }, { status: 400 })
   }
 
-  // ── 1. Load or create UserMemory ──────────────────────────────────────
+  // ── 1. Load or create session ─────────────────────────────────────────
+  let session = body.session_id
+    ? await prisma.chatSession.findUnique({
+        where: { id: body.session_id },
+        include: {
+          messages: {
+            orderBy: { created_at: 'desc' },
+            take: MAX_HISTORY,
+          },
+        },
+      })
+    : null
+
+  if (!session) {
+    session = await prisma.chatSession.create({
+      data: { user_id: userId },
+      include: {
+        messages: { orderBy: { created_at: 'desc' }, take: MAX_HISTORY },
+      },
+    })
+  }
+
+  const sessionId = session.id
+
+  // Reverse to chronological order (fetched desc to get most recent N)
+  const historyForAI = [...session.messages].reverse().map((m) => ({
+    role: m.role as 'user' | 'assistant',
+    content: m.content,
+  }))
+
+  // ── 2. Load or create UserMemory ──────────────────────────────────────
   const userMemory = await prisma.userMemory.upsert({
     where: { user_id: userId },
     create: { user_id: userId },
@@ -39,13 +71,19 @@ export async function POST(req: NextRequest) {
     ? (JSON.parse(userMemory.summary_text) as IntentState)
     : { completenessScore: 0 }
 
-  // ── 2. Extract intent from message ────────────────────────────────────
+  // ── 3. Persist user message before AI call ────────────────────────────
+  await prisma.chatMessage.create({
+    data: { session_id: sessionId, role: 'user', content: message },
+  })
+
+  // ── 4. Extract intent from message (with conversation history) ────────
   let extracted: Record<string, unknown> = {}
   try {
     const intentCompletion = await groq.chat.completions.create({
       model: GROQ_FAST,
       messages: [
         { role: 'system', content: PROMPTS.INTENT_EXTRACTION },
+        ...historyForAI,
         { role: 'user', content: message },
       ],
       temperature: 0,
@@ -56,7 +94,7 @@ export async function POST(req: NextRequest) {
     extracted = { is_general_query: true }
   }
 
-  // ── 3. Map extracted fields to IntentState updates ────────────────────
+  // ── 5. Map extracted fields to IntentState updates ────────────────────
   const updates: Partial<IntentState> = {}
   if (extracted.bhk) updates.bhk = extracted.bhk as number
   if (extracted.budget_min || extracted.budget_max) {
@@ -69,7 +107,8 @@ export async function POST(req: NextRequest) {
   if (extracted.sector) updates.sector = `Sector ${extracted.sector}`
   if (extracted.city) updates.city = extracted.city as string
   if (extracted.purpose) updates.purpose = extracted.purpose as IntentState['purpose']
-  if (extracted.property_type) updates.property_type = extracted.property_type as IntentState['property_type']
+  if (extracted.property_type)
+    updates.property_type = extracted.property_type as IntentState['property_type']
   if (extracted.possession_status) {
     updates.preferences = {
       ready_to_move: extracted.possession_status === 'ready_to_move',
@@ -79,14 +118,16 @@ export async function POST(req: NextRequest) {
 
   const newIntent = mergeIntentState(existingIntent, updates)
 
-  // ── 4. Persist intent ─────────────────────────────────────────────────
+  // ── 6. Persist intent ─────────────────────────────────────────────────
   await prisma.userMemory.update({
     where: { user_id: userId },
     data: {
       summary_text: JSON.stringify(newIntent),
       bhk_preference: newIntent.bhk ?? null,
-      budget_min_cr: newIntent.budget?.min != null ? newIntent.budget.min / 10_000_000 : null,
-      budget_max_cr: newIntent.budget?.max != null ? newIntent.budget.max / 10_000_000 : null,
+      budget_min_cr:
+        newIntent.budget?.min != null ? newIntent.budget.min / 10_000_000 : null,
+      budget_max_cr:
+        newIntent.budget?.max != null ? newIntent.budget.max / 10_000_000 : null,
       sector_preference: newIntent.sector ?? null,
       purpose: newIntent.purpose ?? null,
     },
@@ -100,18 +141,43 @@ export async function POST(req: NextRequest) {
     is_general_query: extracted.is_general_query as boolean | undefined,
   }
 
-  // ── 5a. Pure greeting / chitchat ──────────────────────────────────────
-  if (extracted.conversational_reply) {
+  // ── Helper: persist AI response + update session, then return JSON ─────
+  const respond = async (
+    responseMessage: string,
+    extras: Record<string, unknown> = {},
+  ) => {
+    await Promise.all([
+      prisma.chatMessage.create({
+        data: {
+          session_id: sessionId,
+          role: 'assistant',
+          content: responseMessage,
+          intent_snapshot: JSON.parse(JSON.stringify(newIntent)),
+        },
+      }),
+      prisma.chatSession.update({
+        where: { id: sessionId },
+        data: { message_count: { increment: 2 } },
+      }),
+    ])
     return NextResponse.json({
-      message: extracted.conversational_reply,
-      showRecommendations: false,
-      chatPhase: 'DISCOVERY',
+      session_id: sessionId,
+      message: responseMessage,
       resolvedFields: newIntent.resolvedFields,
       intent: intentSummary,
+      ...extras,
     })
   }
 
-  // ── 5b. General / informational query ────────────────────────────────
+  // ── 7a. Pure greeting / chitchat ──────────────────────────────────────
+  if (extracted.conversational_reply) {
+    return respond(extracted.conversational_reply as string, {
+      showRecommendations: false,
+      chatPhase: 'DISCOVERY',
+    })
+  }
+
+  // ── 7b. General / informational query ────────────────────────────────
   if (extracted.is_general_query) {
     let aiMessage = ''
     try {
@@ -122,6 +188,7 @@ export async function POST(req: NextRequest) {
             role: 'system',
             content: PROMPTS.GENERAL_QUERY.replace('{{SEARCH_CONTEXT}}', ''),
           },
+          ...historyForAI.slice(-8),
           { role: 'user', content: message },
         ],
         temperature: 0.3,
@@ -132,23 +199,22 @@ export async function POST(req: NextRequest) {
       aiMessage = "I couldn't fetch a response right now. Please try again."
     }
 
-    return NextResponse.json({
-      message: aiMessage,
+    return respond(aiMessage, {
       showRecommendations: false,
       chatPhase: 'DISCOVERY',
-      resolvedFields: newIntent.resolvedFields,
-      intent: { ...intentSummary, is_general_query: true },
     })
   }
 
-  // ── 5c. Enough intent — search DB + advisor response ──────────────────
+  // ── 7c. Intent complete — search DB + advisor response ────────────────
   if (isIntentComplete(newIntent)) {
     const projects = await searchProjects({
       city: newIntent.city ?? 'Noida',
       sector: newIntent.sector,
       bhk: newIntent.bhk,
-      budget_min_cr: newIntent.budget?.min != null ? newIntent.budget.min / 10_000_000 : undefined,
-      budget_max_cr: newIntent.budget?.max != null ? newIntent.budget.max / 10_000_000 : undefined,
+      budget_min_cr:
+        newIntent.budget?.min != null ? newIntent.budget.min / 10_000_000 : undefined,
+      budget_max_cr:
+        newIntent.budget?.max != null ? newIntent.budget.max / 10_000_000 : undefined,
     })
 
     const projectContext = projects
@@ -172,8 +238,12 @@ export async function POST(req: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: PROMPTS.ADVISOR_MODE + '\n\n═══ SHORTLISTED PROPERTIES ═══\n\n' + projectContext,
+            content:
+              PROMPTS.ADVISOR_MODE +
+              '\n\n═══ SHORTLISTED PROPERTIES ═══\n\n' +
+              projectContext,
           },
+          ...historyForAI.slice(-8),
           { role: 'user', content: message },
         ],
         temperature: 0.3,
@@ -181,28 +251,39 @@ export async function POST(req: NextRequest) {
       })
       advisorMessage = advisorCompletion.choices[0].message.content ?? ''
     } catch {
-      advisorMessage = `Here are ${projects.length} properties matching your criteria in ${newIntent.sector ?? 'Sector 150'}.`
+      advisorMessage = `Here are ${projects.length} properties matching your criteria.`
     }
 
-    return NextResponse.json({
-      message: advisorMessage,
+    return respond(advisorMessage, {
       showRecommendations: true,
       projects,
       chatPhase: 'ADVISOR',
-      resolvedFields: newIntent.resolvedFields,
-      intent: intentSummary,
     })
   }
 
-  // ── 5d. Not enough intent — ask next question ─────────────────────────
+  // ── 7d. Need more intent — ask next question with intent context ───────
   const nextQ = getNextQuestion(newIntent)
+
+  const resolvedList = Object.entries(newIntent.resolvedFields ?? {})
+    .filter(([, v]) => v)
+    .map(([k]) => k)
+    .join(', ')
+
+  const questionSystemPrompt =
+    `${PROMPTS.QUESTION_GENERATION}\n\n` +
+    `═══ RESOLVED FIELDS — DO NOT ask about these ═══\n` +
+    `${resolvedList || 'none yet'}\n\n` +
+    `═══ NEXT QUESTION (rephrase naturally, keep it brief) ═══\n` +
+    `"${nextQ.question}"\n\n` +
+    `RULE: End your response with exactly this question rephrased. Ask no other question.`
 
   let questionMessage = nextQ.question
   try {
     const questionCompletion = await groq.chat.completions.create({
       model: GROQ_FAST,
       messages: [
-        { role: 'system', content: PROMPTS.QUESTION_GENERATION },
+        { role: 'system', content: questionSystemPrompt },
+        ...historyForAI.slice(-4),
         { role: 'user', content: message },
       ],
       temperature: 0.3,
@@ -213,12 +294,9 @@ export async function POST(req: NextRequest) {
     questionMessage = nextQ.question
   }
 
-  return NextResponse.json({
-    message: questionMessage,
+  return respond(questionMessage, {
     showRecommendations: false,
     chatPhase: 'DISCOVERY',
     next_expected_field: nextQ.field,
-    resolvedFields: newIntent.resolvedFields,
-    intent: intentSummary,
   })
 }
