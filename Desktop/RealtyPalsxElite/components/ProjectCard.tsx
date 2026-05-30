@@ -5,7 +5,7 @@ import {
   ClockCountdown,
   CheckCircle,
   SealCheck,
-  TrainSubway,
+  Subway,
   AirplaneTakeoff,
   Path,
   SoccerBall,
@@ -33,7 +33,7 @@ const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
 }
 
 const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
-  metro: TrainSubway,
+  metro: Subway,
   airport: AirplaneTakeoff,
   road: Path,
   school: Buildings,

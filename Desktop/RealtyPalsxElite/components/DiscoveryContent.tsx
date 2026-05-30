@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChatMessage } from '@/types/property';
-import type { ProjectCard } from '@/types/project';
+import type { ProjectCard as ProjectCardType } from '@/types/project';
 import ProjectCard from '@/components/ProjectCard';
 import PropertyDetailView from '@/components/PropertyDetailView';
 import AIThinkingIndicator from '@/components/AIThinkingIndicator';
@@ -30,10 +30,10 @@ const SUGGESTION_CHIPS = [
 ];
 
 interface DiscoveryContentProps {
-  properties: ProjectCard[];
+  properties: ProjectCardType[];
   loading: boolean;
   onLoadProperties: (filters: any) => void;
-  onUpdateProperties: (properties: ProjectCard[]) => void;
+  onUpdateProperties: (properties: ProjectCardType[]) => void;
   userId: string | null;
   onResetChat?: () => void;
 }
