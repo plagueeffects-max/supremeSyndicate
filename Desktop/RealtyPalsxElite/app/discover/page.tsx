@@ -3,11 +3,11 @@
 import { useState, useEffect, Suspense } from 'react';
 import Sidebar from '@/components/Sidebar';
 import DiscoveryContent from '@/components/DiscoveryContent';
-import { Property } from '@/types/property';
+import type { ProjectCard } from '@/types/project';
 import { API_BASE } from '@/lib/env';
 
 export default function DiscoverPage() {
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [properties, setProperties] = useState<ProjectCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState<'discovery' | 'saved' | 'compare' | 'value-estimator' | 'market-intelligence' | 'lead-snapshot'>('discovery');
   const [userId, setUserId] = useState<string | null>(null);
@@ -59,11 +59,11 @@ export default function DiscoverPage() {
         ...(filters.max_price && { max_price: filters.max_price.toString() }),
       });
 
-      const response = await fetch(`${API_BASE}/properties?${params}`);
+      const response = await fetch(`${API_BASE}/projects?${params}`);
       if (!response.ok) throw new Error('Failed to fetch properties');
 
       const data = await response.json();
-      setProperties(data.properties || []);
+      setProperties(data.projects || []);
     } catch (error) {
       console.error('Error loading properties:', error);
     } finally {

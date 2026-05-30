@@ -1,3 +1,5 @@
+import type { ProjectCard } from './project'
+
 export interface Sector {
   id: string;
   city: string;
@@ -70,7 +72,7 @@ export interface ChatMessage {
   id: string;
   type: 'user' | 'ai';
   content: string;
-  properties?: Property[];
+  properties?: ProjectCard[];
   images?: { url: string; caption?: string; type: string }[];
   highlights?: string[];
   amenities?: string[];

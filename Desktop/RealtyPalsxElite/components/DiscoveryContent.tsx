@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Property, ChatMessage } from '@/types/property';
-import PropertyCard from '@/components/PropertyCard';
+import { ChatMessage } from '@/types/property';
+import type { ProjectCard } from '@/types/project';
+import ProjectCard from '@/components/ProjectCard';
 import PropertyDetailView from '@/components/PropertyDetailView';
 import AIThinkingIndicator from '@/components/AIThinkingIndicator';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -22,17 +23,17 @@ import {
 } from 'lucide-react';
 
 const SUGGESTION_CHIPS = [
-  'Find a 3BHK in Gurgaon under 1.5 Cr',
-  'Best sectors in Noida for investment',
-  'Compare Sector 150 vs Sector 104 Noida',
-  'Ready-to-move flats in Greater Noida',
+  'Show 3BHK apartments in Sector 150 under 3 Cr',
+  'Best luxury projects with golf course views',
+  'Compare ATS Kingston Heath vs Godrej Palm Retreat',
+  'Which Sector 150 projects are RERA registered?',
 ];
 
 interface DiscoveryContentProps {
-  properties: Property[];
+  properties: ProjectCard[];
   loading: boolean;
   onLoadProperties: (filters: any) => void;
-  onUpdateProperties: (properties: Property[]) => void;
+  onUpdateProperties: (properties: ProjectCard[]) => void;
   userId: string | null;
   onResetChat?: () => void;
 }
@@ -708,7 +709,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
             <div className="mt-2 grid grid-cols-2 gap-4 w-full max-w-4xl mx-auto overflow-hidden">
               {message.properties.map((property) => (
                 <div key={property.id}>
-                  <PropertyCard property={property} userId={userId} />
+                  <ProjectCard project={property} userId={userId} />
                 </div>
               ))}
             </div>
