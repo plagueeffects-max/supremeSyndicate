@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChatMessage } from '@/types/property';
-import type { ProjectCard as ProjectCardType } from '@/types/project';
 import ProjectCard from '@/components/ProjectCard';
 import PropertyDetailView from '@/components/PropertyDetailView';
 import AIThinkingIndicator from '@/components/AIThinkingIndicator';
@@ -30,15 +29,10 @@ const SUGGESTION_CHIPS = [
 ];
 
 interface DiscoveryContentProps {
-  properties: ProjectCardType[];
-  loading: boolean;
-  onLoadProperties: (filters: any) => void;
-  onUpdateProperties: (properties: ProjectCardType[]) => void;
   userId: string | null;
-  onResetChat?: () => void;
 }
 
-export default function DiscoveryContent({ properties, loading, onLoadProperties, onUpdateProperties, userId, onResetChat }: DiscoveryContentProps) {
+export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [chatInput, setChatInput] = useState('');
@@ -312,6 +306,16 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
     })();
   }, [userId, isInitialized, searchParams]);
 
+  // Pick up prefill query from compare page (sessionStorage)
+  useEffect(() => {
+    if (!isInitialized) return;
+    const prefill = sessionStorage.getItem('rp_prefill_chat');
+    if (prefill) {
+      sessionStorage.removeItem('rp_prefill_chat');
+      setTimeout(() => submitMessage(prefill), 200);
+    }
+  }, [isInitialized]);
+
   // Expose reset function for Sidebar "New Chat"
   useEffect(() => {
     (window as any).__resetDiscoveryChat = async () => {
@@ -408,12 +412,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
         return nextHistory;
       });
 
-      if (data.showRecommendations && data.properties) {
-        setShowRecommendations(true);
-        onUpdateProperties(data.properties);
-      } else {
-        setShowRecommendations(false);
-      }
+      setShowRecommendations(data.showRecommendations && !!data.properties);
     } catch (error: any) {
       console.error('Error in chat:', error);
       const errorMessage: ChatMessage = {
@@ -550,12 +549,7 @@ export default function DiscoveryContent({ properties, loading, onLoadProperties
       };
       setChatHistory((prev) => [...prev, aiMessage]);
 
-      if (data.showRecommendations && data.properties) {
-        setShowRecommendations(true);
-        onUpdateProperties(data.properties);
-      } else {
-        setShowRecommendations(false);
-      }
+      setShowRecommendations(data.showRecommendations && !!data.properties);
     } catch (error: any) {
       console.error('Error in quick reply:', error);
       setResolvedFields(prev => { const next = { ...prev }; delete next[field]; return next; });
