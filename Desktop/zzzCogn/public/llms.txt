@@ -1,0 +1,34 @@
+# Cogn8 Systems
+
+> A product studio that builds platforms where identity, data, and human experience converge.
+
+Cogn8 Systems is a small senior product studio founded by Julie McFadden. The studio engages with founders, operators, and companies at three levels: as architects (strategic advisory, documents, decisions), co-builders (equity-bearing platform partnerships), and full build partners (architecture through deployment).
+
+## Studio
+
+- **Founder:** Julie McFadden, Founder & Platform Architect
+- **Focus:** Identity infrastructure, healthcare platforms, document systems, human-facing data systems
+- **Philosophy:** Quiet authority. Platforms not features. Honest about unknowns. We finish things.
+- **Size:** Deliberately small; proximity over scale.
+
+## Current work
+
+- **IDmgmt** (idmgmt.net) — Portable patient-controlled identity platform for healthcare. Active pilot conversations with Arkansas hospital systems. Regulatory tailwinds from Cures Act and TEFCA.
+- **Consumer marketplace platform** — Co-build, Florida. Vetted-provider gig marketplace.
+- **Naturalist content & commerce platform** — Co-build, Florida. Ecology education + commerce.
+- **Estate planning platform** — Early architecture. Guided intake and document generation.
+
+## How we engage
+
+- **Architect:** Strategic advisory for teams with architectural questions. Weeks not months. Documents and decisions, not code.
+- **Co-build:** Hands-on partnership with domain-expert founders. Cogn8 brings platform + engineering; founder brings market knowledge. Equity welcome.
+- **Build:** Full platform delivery from architecture to deployment.
+
+## Contact
+
+- Contact form: cogn8.com/#contact
+- Book a call: zcal.co/juliemcfadden
+
+## Do not index
+
+- /api/*
