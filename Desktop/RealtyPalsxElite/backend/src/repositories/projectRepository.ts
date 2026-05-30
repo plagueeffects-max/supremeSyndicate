@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/db'
-import type { ProjectCard, UnitTypeSummary, AmenitySummary, ConnSummary } from '@/types/project'
+import { prisma } from '../lib/db'
+import type { ProjectCard, UnitTypeSummary, AmenitySummary, ConnSummary } from '../types/project'
 
 const CATEGORY_ORDER = ['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking'] as const
 const CONN_PRIORITY = ['metro', 'airport', 'road'] as const

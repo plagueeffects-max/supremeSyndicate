@@ -1,44 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { groq, GROQ_FAST, GROQ_SMART } from '@/lib/ai/groq'
-import { PROMPTS } from '@/lib/ai/prompts'
+import { Router, Request, Response } from 'express'
+import { prisma } from '../lib/db'
+import { groq, GROQ_FAST, GROQ_SMART } from '../lib/ai/groq'
+import { PROMPTS } from '../lib/ai/prompts'
 import {
   mergeIntentState,
   isIntentComplete,
   getNextQuestion,
   type IntentState,
-} from '@/lib/ai/intentManager'
-import { searchProjects } from '@/server/repositories/projectRepository'
+} from '../lib/ai/intentManager'
+import { searchProjects } from '../repositories/projectRepository'
 
+const router = Router()
 const MAX_HISTORY = 12
 
-export async function POST(req: NextRequest) {
-  const userId = req.headers.get('X-User-Id')
+router.post('/', async (req: Request, res: Response) => {
+  const userId = req.headers['x-user-id'] as string | undefined
   if (!userId) {
-    return NextResponse.json({ error: 'X-User-Id header required' }, { status: 400 })
+    res.status(400).json({ error: 'X-User-Id header required' })
+    return
   }
 
-  let body: { message?: string; session_id?: string }
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  const { message: rawMessage, session_id } = req.body as {
+    message?: string
+    session_id?: string
   }
-
-  const message = body.message?.trim()
+  const message = rawMessage?.trim()
   if (!message) {
-    return NextResponse.json({ error: 'message is required' }, { status: 400 })
+    res.status(400).json({ error: 'message is required' })
+    return
   }
 
   // ── 1. Load or create session ─────────────────────────────────────────
-  let session = body.session_id
+  let session = session_id
     ? await prisma.chatSession.findUnique({
-        where: { id: body.session_id },
+        where: { id: session_id },
         include: {
-          messages: {
-            orderBy: { created_at: 'desc' },
-            take: MAX_HISTORY,
-          },
+          messages: { orderBy: { created_at: 'desc' }, take: MAX_HISTORY },
         },
       })
     : null
@@ -46,15 +43,11 @@ export async function POST(req: NextRequest) {
   if (!session) {
     session = await prisma.chatSession.create({
       data: { user_id: userId },
-      include: {
-        messages: { orderBy: { created_at: 'desc' }, take: MAX_HISTORY },
-      },
+      include: { messages: { orderBy: { created_at: 'desc' }, take: MAX_HISTORY } },
     })
   }
 
   const sessionId = session.id
-
-  // Reverse to chronological order (fetched desc to get most recent N)
   const historyForAI = [...session.messages].reverse().map((m) => ({
     role: m.role as 'user' | 'assistant',
     content: m.content,
@@ -76,7 +69,7 @@ export async function POST(req: NextRequest) {
     data: { session_id: sessionId, role: 'user', content: message },
   })
 
-  // ── 4. Extract intent from message (with conversation history) ────────
+  // ── 4. Extract intent (with conversation history) ─────────────────────
   let extracted: Record<string, unknown> = {}
   try {
     const intentCompletion = await groq.chat.completions.create({
@@ -94,7 +87,7 @@ export async function POST(req: NextRequest) {
     extracted = { is_general_query: true }
   }
 
-  // ── 5. Map extracted fields to IntentState updates ────────────────────
+  // ── 5. Map to IntentState updates ─────────────────────────────────────
   const updates: Partial<IntentState> = {}
   if (extracted.bhk) updates.bhk = extracted.bhk as number
   if (extracted.budget_min || extracted.budget_max) {
@@ -141,7 +134,7 @@ export async function POST(req: NextRequest) {
     is_general_query: extracted.is_general_query as boolean | undefined,
   }
 
-  // ── Helper: persist AI response + update session, then return JSON ─────
+  // ── Helper: persist AI message, return response ───────────────────────
   const respond = async (
     responseMessage: string,
     extras: Record<string, unknown> = {},
@@ -160,7 +153,7 @@ export async function POST(req: NextRequest) {
         data: { message_count: { increment: 2 } },
       }),
     ])
-    return NextResponse.json({
+    res.json({
       session_id: sessionId,
       message: responseMessage,
       resolvedFields: newIntent.resolvedFields,
@@ -169,12 +162,13 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // ── 7a. Pure greeting / chitchat ──────────────────────────────────────
+  // ── 7a. Greeting / chitchat ───────────────────────────────────────────
   if (extracted.conversational_reply) {
-    return respond(extracted.conversational_reply as string, {
+    await respond(extracted.conversational_reply as string, {
       showRecommendations: false,
       chatPhase: 'DISCOVERY',
     })
+    return
   }
 
   // ── 7b. General / informational query ────────────────────────────────
@@ -198,14 +192,11 @@ export async function POST(req: NextRequest) {
     } catch {
       aiMessage = "I couldn't fetch a response right now. Please try again."
     }
-
-    return respond(aiMessage, {
-      showRecommendations: false,
-      chatPhase: 'DISCOVERY',
-    })
+    await respond(aiMessage, { showRecommendations: false, chatPhase: 'DISCOVERY' })
+    return
   }
 
-  // ── 7c. Intent complete — search DB + advisor response ────────────────
+  // ── 7c. Intent complete — search + advisor ────────────────────────────
   if (isIntentComplete(newIntent)) {
     const projects = await searchProjects({
       city: newIntent.city ?? 'Noida',
@@ -254,14 +245,15 @@ export async function POST(req: NextRequest) {
       advisorMessage = `Here are ${projects.length} properties matching your criteria.`
     }
 
-    return respond(advisorMessage, {
+    await respond(advisorMessage, {
       showRecommendations: true,
       projects,
       chatPhase: 'ADVISOR',
     })
+    return
   }
 
-  // ── 7d. Need more intent — ask next question with intent context ───────
+  // ── 7d. Discovery — ask next question with intent context ─────────────
   const nextQ = getNextQuestion(newIntent)
 
   const resolvedList = Object.entries(newIntent.resolvedFields ?? {})
@@ -294,9 +286,11 @@ export async function POST(req: NextRequest) {
     questionMessage = nextQ.question
   }
 
-  return respond(questionMessage, {
+  await respond(questionMessage, {
     showRecommendations: false,
     chatPhase: 'DISCOVERY',
     next_expected_field: nextQ.field,
   })
-}
+})
+
+export default router
