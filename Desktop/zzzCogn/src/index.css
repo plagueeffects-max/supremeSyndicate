@@ -185,10 +185,10 @@ section { scroll-margin-top: calc(var(--nav-h) + 24px); }
 
 /* ── Hero ─────────────────────────────────────────────────── */
 .hero {
-  min-height: auto;
+  min-height: calc(100svh - var(--nav-h));
   display: grid;
   align-items: center;
-  padding: clamp(72px, 8vw, 112px) 0 clamp(64px, 7vw, 94px);
+  padding: clamp(40px, 5.5vw, 88px) 0 clamp(36px, 5vw, 80px);
   position: relative;
 }
 
@@ -251,8 +251,8 @@ h1, h2, h3 {
 
 h1 {
   max-width: 980px;
-  margin-top: 28px;
-  font-size: clamp(4.8rem, 11vw, 10rem);
+  margin-top: 22px;
+  font-size: clamp(4.4rem, 10.5vw, 10rem);
   line-height: 0.86;
 }
 
@@ -706,15 +706,20 @@ button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
   .mark        { width: 25px; height: 25px; }
   .wrap        { width: min(100% - 32px, var(--max)); }
 
-  .hero        { padding: 58px 0 64px; }
+  .hero        { padding: 28px 0 32px; align-items: start; }
   .hero-frame  { display: none; }
+  .hero-aside .large-mark { display: none; }
+  .hero-aside { padding: 14px 0 0; border-top: 1px solid var(--line-strong); border-left: 0; }
+  .hero-copy { margin-top: 14px; }
+  .hero-actions { margin-top: 20px; }
 
-  h1 { font-size: clamp(3.35rem, 16vw, 4.2rem); line-height: 0.9; }
+  h1 { font-size: clamp(2.8rem, 13.5vw, 3.8rem); line-height: 0.88; margin-top: 14px; }
 
   .hero-statement {
     max-width: 100%;
-    font-size: clamp(1.55rem, 7.4vw, 2.1rem);
-    line-height: 1.08;
+    font-size: clamp(1.22rem, 5.8vw, 1.85rem);
+    line-height: 1.12;
+    margin-top: 16px;
   }
 
   h2 { font-size: clamp(2.15rem, 11vw, 3.1rem); }
@@ -736,6 +741,28 @@ button[type="submit"]:disabled { opacity: 0.6; cursor: not-allowed; }
   .footer-inner { align-items: flex-start; flex-direction: column; }
 }
 
+/* ── Landscape mobile / short viewports ───────────────────── */
+@media (max-height: 560px) and (max-width: 900px) {
+  .hero {
+    min-height: auto;
+    padding: 18px 0 22px;
+    align-items: start;
+  }
+  .hero-aside { display: none; }
+  .hero-actions { margin-top: 18px; }
+}
+
+/* ── Tiny screens (320px) ─────────────────────────────────── */
+@media (max-width: 360px) {
+  h1 { font-size: clamp(2.4rem, 13vw, 2.8rem); }
+  .hero-statement { font-size: 1.1rem; }
+  .hero-copy { font-size: 0.92rem; }
+}
+
+/* ── Smooth scrolling enhancement ────────────────────────── */
+html { scroll-behavior: smooth; }
+
+/* ── Reduced motion ───────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

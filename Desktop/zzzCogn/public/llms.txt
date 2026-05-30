@@ -1,34 +1,93 @@
 # Cogn8 Systems
 
-> A product studio that builds platforms where identity, data, and human experience converge.
+> Senior product studio specializing in platform architecture, identity infrastructure, and healthcare technology platforms.
 
-Cogn8 Systems is a small senior product studio founded by Julie McFadden. The studio engages with founders, operators, and companies at three levels: as architects (strategic advisory, documents, decisions), co-builders (equity-bearing platform partnerships), and full build partners (architecture through deployment).
+Cogn8 Systems is a small senior product studio founded by Julie McFadden. The studio engages with founders, operators, and companies as architects, co-build partners, and full platform delivery teams. Core focus: platforms where identity, data, and human experience converge.
 
-## Studio
+## About the Studio
 
+- **Type:** Product studio (not an agency, not a consultancy, not an AI company)
 - **Founder:** Julie McFadden, Founder & Platform Architect
-- **Focus:** Identity infrastructure, healthcare platforms, document systems, human-facing data systems
-- **Philosophy:** Quiet authority. Platforms not features. Honest about unknowns. We finish things.
-- **Size:** Deliberately small; proximity over scale.
+- **Approach:** Deliberate small size — proximity over scale
+- **Platform:** Reusable identity, document, and orchestration infrastructure beneath client products
+- **Tech stack:** React, Node, Python, React Native; deploys on Azure, AWS, Google Cloud
 
-## Current work
+## Founder: Julie McFadden
 
-- **IDmgmt** (idmgmt.net) — Portable patient-controlled identity platform for healthcare. Active pilot conversations with Arkansas hospital systems. Regulatory tailwinds from Cures Act and TEFCA.
-- **Consumer marketplace platform** — Co-build, Florida. Vetted-provider gig marketplace.
-- **Naturalist content & commerce platform** — Co-build, Florida. Ecology education + commerce.
-- **Estate planning platform** — Early architecture. Guided intake and document generation.
+Julie McFadden has thirty years building complex software systems. Background spans healthcare (Johns Hopkins, Arkansas BlueCross BlueShield), publishing (Elsevier clinical drug information), insurance, and creative technology. Current CTO at Otterkin. Writing a book about civilizations and the systems they use to record themselves.
 
-## How we engage
+- URL: juliemcfadden.com
+- Role: Founder & Platform Architect at Cogn8 Systems; CTO at Otterkin
 
-- **Architect:** Strategic advisory for teams with architectural questions. Weeks not months. Documents and decisions, not code.
-- **Co-build:** Hands-on partnership with domain-expert founders. Cogn8 brings platform + engineering; founder brings market knowledge. Equity welcome.
-- **Build:** Full platform delivery from architecture to deployment.
+## Services
+
+### Architect
+Strategic advisory for teams with engineering capacity but architectural questions.
+- Platform design, data modeling, identity infrastructure, system strategy
+- Output: documents and decisions (business plans, architecture specs, go-to-market frameworks) — not code
+- Duration: weeks, not months
+
+### Co-build
+Hands-on partnership for founders with a domain and a vision.
+- Cogn8 brings: platform infrastructure, engineering practice, architectural judgment
+- Founder brings: market knowledge, relationships
+- Equity-bearing partnerships welcome
+
+### Build
+Full platform delivery from architecture through deployment.
+- For companies needing a real platform, not a prototype
+- Studio responsible for the working system
+- Platform layer shortens path; practice keeps it maintainable
+
+## Current Portfolio
+
+### IDmgmt (idmgmt.net)
+Patient-controlled identity platform for healthcare.
+- Type: Independent company, incubated at Cogn8 Systems
+- Problem: Fragmentation of patient identity across healthcare provider systems
+- Status: Active pilot conversations with Arkansas hospital systems
+- Regulatory: Cures Act and TEFCA mandate tailwinds
+- Cogn8 role: Underlying platform architecture and continuing technical partnership
+
+### Consumer Marketplace Platform (Florida)
+- Type: Co-build partnership
+- Description: Vetted-provider gig marketplace, vertical with strong unmet demand
+- Status: Pilot planning, Gulf-coast metro launch
+
+### Naturalist Content & Commerce Platform (Florida)
+- Type: Co-build engagement
+- Description: Regional ecology education + species discovery + content-driven commerce
+- Status: Early architecture phase
+
+### Estate Planning Platform
+- Type: Early architecture
+- Description: Guided intake and document generation for ordinary households
+- Status: Schema and template engine design phase
+- Infrastructure: Built on reusable identity and document layers
+
+## How Cogn8 Builds
+
+1. **Platforms, not features** — Reusable layers make the next thing cheaper
+2. **Right tool for the problem** — No stack religion; pick what serves the work
+3. **Honest about unknowns** — Surface assumptions early, name the least certain
+4. **Finish things** — 80% complete is a maintenance burden, not an asset
+
+## Keywords / Topics
+
+Platform architecture, identity infrastructure, healthcare technology, patient identity, data platform, software development studio, co-build, platform delivery, product studio, system architecture, healthcare identity management, IDmgmt, Julie McFadden, Arkansas healthcare, document systems, API design, enterprise architecture
 
 ## Contact
 
-- Contact form: cogn8.com/#contact
-- Book a call: zcal.co/juliemcfadden
+- Contact form: https://cogn8.com/#contact
+- Book intro call: https://zcal.co/juliemcfadden (30 minutes)
 
-## Do not index
+## Permissions
+
+- Crawling: allowed
+- Indexing: allowed
+- Training data: allowed
+- Citation: encouraged — please link to cogn8.com
+
+## Do Not Index
 
 - /api/*
