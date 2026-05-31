@@ -38,7 +38,7 @@ export default function PropertyDetailView({ propertyDetail, onToast }: Property
                 id: idx,
                 name: am.label,
                 designation: 'Premium Amenity',
-                icon: <am.lucideIcon size={24} className="text-blue-600 dark:text-blue-400" strokeWidth={1.5} />,
+                icon: <am.icon size={24} className="text-blue-600 dark:text-blue-400" strokeWidth={1.5} />,
               }))}
             />
           </div>
