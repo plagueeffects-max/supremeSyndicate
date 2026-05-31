@@ -78,6 +78,7 @@ export interface ChatMessage {
   amenities?: string[];
   propertyDetail?: PropertyDetail;
   showSectorIntelligence?: boolean;
+  showComparisonTable?: boolean;
   timestamp: string;
   intent?: {
     completenessScore?: number;

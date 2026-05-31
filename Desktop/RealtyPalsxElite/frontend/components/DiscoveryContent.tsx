@@ -18,6 +18,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Header from '@/components/Header';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
+import ComparisonTable from '@/components/ComparisonTable';
 import {
   MessageSquare, User, RotateCcw, AlertTriangle, Send, Mic, ExternalLink, Activity, Info, TrendingUp,
   Share2, Settings, Plus, Search, GitCompare, HelpCircle, ChevronDown
@@ -397,6 +398,11 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
         amenities: data.amenities || undefined,
         propertyDetail: data.propertyDetail || undefined,
         showSectorIntelligence: data.showSectorIntelligence || undefined,
+        showComparisonTable: (
+          typeof currentInput === 'string' &&
+          currentInput.toLowerCase().includes('compare') &&
+          lastShortlist.length >= 2
+        ),
         timestamp: new Date().toISOString(),
         intent: data.intent,
       };
@@ -479,6 +485,11 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
           amenities: data.amenities || undefined,
           propertyDetail: data.propertyDetail || undefined,
           showSectorIntelligence: data.showSectorIntelligence || undefined,
+          showComparisonTable: (
+            typeof userMsg === 'string' &&
+            userMsg.toLowerCase().includes('compare') &&
+            lastShortlist.length >= 2
+          ),
           timestamp: new Date().toISOString(),
           intent: data.intent,
         };
@@ -550,6 +561,11 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
         amenities: data.amenities || undefined,
         propertyDetail: data.propertyDetail || undefined,
         showSectorIntelligence: data.showSectorIntelligence || undefined,
+        showComparisonTable: (
+          typeof message === 'string' &&
+          message.toLowerCase().includes('compare') &&
+          lastShortlist.length >= 2
+        ),
         timestamp: new Date().toISOString(),
         intent: data.intent,
       };
@@ -779,6 +795,52 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── Smart follow-up chips — ADVISOR mode, last message only ── */}
+        {message.type === 'ai' && chatPhase === 'ADVISOR' && lastShortlist.length > 0 && index === chatHistory.length - 1 && !isSubmitting && (
+          <div className="mt-3 ml-14 flex flex-wrap gap-2">
+            <button
+              onClick={() => submitMessage(
+                `Calculate EMI for ${lastShortlist[0].name} at ${lastShortlist[0].price_min_cr ?? lastShortlist[0].price_range_label} with 20% down payment`
+              )}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-full text-[11px] font-semibold text-indigo-700 transition-all"
+            >
+              📊 Calculate EMI
+            </button>
+
+            {lastShortlist.length >= 2 ? (
+              <button
+                onClick={() => submitMessage(
+                  `Compare ${lastShortlist[0].name} vs ${lastShortlist[1].name} side by side`
+                )}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-full text-[11px] font-semibold text-blue-700 transition-all"
+              >
+                ⚖️ Compare {lastShortlist[0].name.split(' ').pop()} vs {lastShortlist[1].name.split(' ').pop()}
+              </button>
+            ) : (
+              <button
+                onClick={() => submitMessage('Compare these properties for me')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-full text-[11px] font-semibold text-blue-700 transition-all"
+              >
+                ⚖️ Compare Properties
+              </button>
+            )}
+
+            <button
+              onClick={() => submitMessage(`I'd like to schedule a site visit for ${lastShortlist[0].name}`)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 hover:bg-green-100 border border-green-100 rounded-full text-[11px] font-semibold text-green-700 transition-all"
+            >
+              🏠 Request Site Visit
+            </button>
+          </div>
+        )}
+
+        {/* ── Inline comparison table ── */}
+        {message.type === 'ai' && message.showComparisonTable && lastShortlist.length >= 2 && (
+          <div className="mt-3 ml-14 w-full">
+            <ComparisonTable left={lastShortlist[0]} right={lastShortlist[1]} />
           </div>
         )}
 
