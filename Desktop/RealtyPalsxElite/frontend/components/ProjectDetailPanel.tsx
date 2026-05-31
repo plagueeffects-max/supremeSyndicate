@@ -14,6 +14,7 @@ import {
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import { API_BASE } from '@/lib/env'
+import AmenityIcon from '@/components/AmenityIcon'
 
 interface Props {
   project: ProjectCardType | null
@@ -127,12 +128,31 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                   {isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'}
                 </div>
 
-                {d?.rera_number && (
-                  <div className="absolute top-3 right-12 flex items-center gap-1 text-[10px] font-bold text-white bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-lg">
-                    <Shield size={10} />
-                    RERA {d.rera_number}
-                  </div>
-                )}
+                {d?.rera_number && (() => {
+                  const reraUrl = d?.rera_url ?? null
+                  const content = (
+                    <>
+                      <Shield size={10} />
+                      RERA {d.rera_number}
+                      {reraUrl && <ExternalLink size={8} className="ml-0.5 opacity-80" />}
+                    </>
+                  )
+                  return reraUrl ? (
+                    <a
+                      href={reraUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute top-3 right-12 flex items-center gap-1 text-[10px] font-bold text-white bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-lg hover:bg-blue-500/90 transition-colors cursor-pointer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {content}
+                    </a>
+                  ) : (
+                    <div className="absolute top-3 right-12 flex items-center gap-1 text-[10px] font-bold text-white bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-lg">
+                      {content}
+                    </div>
+                  )
+                })()}
 
                 {/* Close */}
                 <button
@@ -328,18 +348,16 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                     const colorClass = AMENITY_COLORS[cat] ?? 'bg-gray-50 text-gray-600 border-gray-100'
                     const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1)
                     return (
-                      <div key={cat} className="mb-5">
-                        <div className="flex items-center gap-2 mb-2.5">
+                      <div key={cat} className="mb-6">
+                        <div className="flex items-center gap-2 mb-3">
                           <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${colorClass}`}>
                             <Icon size={13} weight="duotone" />
                           </div>
-                          <p className="text-[12px] font-bold text-gray-700">{catLabel}</p>
+                          <p className="text-[12px] font-bold text-gray-700 uppercase tracking-wider">{catLabel}</p>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                           {(names as string[]).map((name: string) => (
-                            <span key={name} className={`text-[11px] font-medium px-2.5 py-1 rounded-full border ${colorClass}`}>
-                              {name}
-                            </span>
+                            <AmenityIcon key={name} amenity={name} size="md" showLabel={true} />
                           ))}
                         </div>
                       </div>
