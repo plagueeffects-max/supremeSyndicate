@@ -31,6 +31,7 @@ export async function searchProjects(filters: SearchFilters): Promise<ProjectCar
       unit_types: { orderBy: { bhk: 'asc' } },
       amenities: true,
       connectivity: true,
+      images: { orderBy: { sort_order: 'asc' } },
     },
     orderBy: { created_at: 'asc' },
     take: 10,
@@ -47,6 +48,7 @@ export async function getProjectBySlug(slug: string): Promise<ProjectCard | null
       unit_types: { orderBy: { bhk: 'asc' } },
       amenities: true,
       connectivity: true,
+      images: { orderBy: { sort_order: 'asc' } },
     },
   })
   return project ? toProjectCard(project) : null
@@ -120,5 +122,12 @@ function toProjectCard(p: any): ProjectCard {
     ),
     top_amenities,
     top_connectivity,
+    images: p.images?.map((img: any) => ({
+      id: img.id,
+      url: img.url,
+      type: img.type as string,
+      caption: img.caption,
+      sort_order: img.sort_order,
+    })) ?? [],
   }
 }

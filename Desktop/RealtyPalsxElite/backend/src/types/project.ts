@@ -23,6 +23,13 @@ export interface ProjectCard {
   unit_types: UnitTypeSummary[]
   top_amenities: AmenitySummary[]
   top_connectivity: ConnSummary[]
+  images: Array<{
+    id: string
+    url: string
+    type: string
+    caption: string | null
+    sort_order: number
+  }>
 }
 
 export interface UnitTypeSummary {
