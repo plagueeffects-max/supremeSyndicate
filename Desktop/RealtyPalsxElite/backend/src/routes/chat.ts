@@ -245,6 +245,16 @@ router.post('/', async (req: Request, res: Response) => {
       advisorMessage = `Here are ${projects.length} properties matching your criteria.`
     }
 
+    // Track viewed properties — persist slugs to UserMemory
+    if (projects.length > 0) {
+      const currentViewed = userMemory.viewed_slugs ?? []
+      const allViewed = [...new Set([...currentViewed, ...projects.map((p) => p.slug)])]
+      await prisma.userMemory.update({
+        where: { user_id: userId },
+        data: { viewed_slugs: allViewed },
+      })
+    }
+
     await respond(advisorMessage, {
       showRecommendations: true,
       projects,

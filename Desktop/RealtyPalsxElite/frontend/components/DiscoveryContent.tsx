@@ -22,10 +22,10 @@ import {
 } from 'lucide-react';
 
 const SUGGESTION_CHIPS = [
-  'Show 3BHK apartments in Sector 150 under 3 Cr',
-  'Best luxury projects with golf course views',
+  '3BHK in Sector 150 under 3 Cr — luxury',
+  '2BHK in Sector 137 under 1.5 Cr — ready to move',
+  '3BHK in Sector 78 under 2 Cr — central Noida',
   'Compare ATS Kingston Heath vs Godrej Palm Retreat',
-  'Which Sector 150 projects are RERA registered?',
 ];
 
 interface DiscoveryContentProps {
