@@ -386,7 +386,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
         id: crypto.randomUUID(),
         type: 'ai',
         content: safeMessage,
-        properties: data.showRecommendations ? (data.properties || []) : undefined,
+        properties: data.showRecommendations ? (data.projects || []) : undefined,
         images: data.images || undefined,
         highlights: data.highlights || undefined,
         amenities: data.amenities || undefined,
@@ -410,7 +410,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
         return nextHistory;
       });
 
-      setShowRecommendations(data.showRecommendations && !!data.properties);
+      setShowRecommendations(data.showRecommendations && !!data.projects);
     } catch (error: any) {
       console.error('Error in chat:', error);
       const errorMessage: ChatMessage = {
@@ -465,7 +465,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
           id: crypto.randomUUID(),
           type: 'ai',
           content: safeMessage,
-          properties: data.showRecommendations ? (data.properties || []) : undefined,
+          properties: data.showRecommendations ? (data.projects || []) : undefined,
           images: data.images || undefined,
           highlights: data.highlights || undefined,
           amenities: data.amenities || undefined,
@@ -536,7 +536,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
         id: crypto.randomUUID(),
         type: 'ai',
         content: safeMessage,
-        properties: data.showRecommendations ? (data.properties || []) : undefined,
+        properties: data.showRecommendations ? (data.projects || []) : undefined,
         images: data.images || undefined,
         highlights: data.highlights || undefined,
         amenities: data.amenities || undefined,
@@ -547,7 +547,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
       };
       setChatHistory((prev) => [...prev, aiMessage]);
 
-      setShowRecommendations(data.showRecommendations && !!data.properties);
+      setShowRecommendations(data.showRecommendations && !!data.projects);
     } catch (error: any) {
       console.error('Error in quick reply:', error);
       setResolvedFields(prev => { const next = { ...prev }; delete next[field]; return next; });
@@ -723,7 +723,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             message.intent?.is_general_query === true;
           if (!message.properties || message.properties.length === 0 || isGeneralOrComparison) return null;
           return (
-            <div className="mt-2 grid grid-cols-2 gap-4 w-full max-w-4xl mx-auto overflow-hidden">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl overflow-hidden">
               {message.properties.map((property) => (
                 <div key={property.id}>
                   <ProjectCard project={property} userId={userId} />
