@@ -1,3 +1,10 @@
+/**
+ * DEPRECATED — All routes have been migrated to Next.js App Router at:
+ * frontend/app/api/v1/
+ *
+ * This Express server is kept as a rollback safety net.
+ * Once production is verified on Next.js routes, this directory can be removed.
+ */
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
