@@ -2,28 +2,18 @@
 
 import Image from 'next/image'
 import {
-  ClockCountdown,
-  CheckCircle,
-  SealCheck,
-  Subway,
-  AirplaneTakeoff,
-  Path,
-  SoccerBall,
-  Buildings,
-  Leaf,
-  Baby,
-  Heart,
-  Tree,
-  PaintBrushBroad,
-  MapPin,
-  SparkleIcon,
-  ArrowRight,
+  ClockCountdown, CheckCircle, SealCheck,
+  Subway, AirplaneTakeoff, Path,
+  SoccerBall, Buildings, Leaf, Baby, Heart, Tree,
+  MapPin, ArrowRight, Sparkle,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 
 interface Props {
   project: ProjectCardType
   userId: string | null
+  index?: number
+  onDetailOpen?: (project: ProjectCardType) => void
 }
 
 const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
@@ -46,15 +36,16 @@ const CONN_ICONS: Record<ConnSummary['type'], React.ElementType> = {
   university: Buildings,
 }
 
-export default function ProjectCard({ project }: Props) {
-  const isRTM    = project.status === 'ready_to_move'
-  const isNew    = project.status === 'new_launch'
+export default function ProjectCard({ project, index = 0, onDetailOpen }: Props) {
+  const isRTM  = project.status === 'ready_to_move'
+  const isNew  = project.status === 'new_launch'
   const statusLabel = isRTM ? 'Ready to Move' : isNew ? 'New Launch' : 'Under Construction'
   const StatusIcon  = isRTM ? CheckCircle : ClockCountdown
 
   const uniqueBhk = [...new Set(project.unit_types.map((u) => `${u.bhk}BHK`))]
 
-  const handleAskAI = () => {
+  const handleAskAI = (e: React.MouseEvent) => {
+    e.stopPropagation()
     window.dispatchEvent(
       new CustomEvent('realtypals:ask-ai', {
         detail: { text: `Tell me more about ${project.name} by ${project.builder.name}` },
@@ -63,106 +54,82 @@ export default function ProjectCard({ project }: Props) {
   }
 
   return (
-    <div className="group relative w-full rounded-[24px] overflow-hidden bg-[#0d0d0d] border border-[#1a1a1a] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#262626] hover:shadow-[0_32px_80px_rgba(0,0,0,0.8)] cursor-pointer">
-
-      {/* ── Hero image ── */}
-      <div className="relative h-[200px] overflow-hidden bg-[#0a0a14]">
+    <div
+      onClick={() => onDetailOpen?.(project)}
+      className="group relative w-full rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+    >
+      {/* Hero image */}
+      <div className="relative h-[168px] overflow-hidden bg-gray-100">
         {project.hero_image_url ? (
           <Image
             src={project.hero_image_url}
             alt={project.name}
             fill
+            unoptimized
+            priority={index < 6}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 380px"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Buildings size={40} weight="duotone" className="text-[#1e1e30]" />
+            <Buildings size={36} weight="duotone" className="text-gray-200" />
           </div>
         )}
 
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0d] via-transparent to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent pointer-events-none" />
+        {/* Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
 
-        {/* Status badge */}
-        <div className={`absolute top-3.5 left-3.5 flex items-center gap-1.5 text-[10px] font-bold tracking-[0.06em] px-2.5 py-1.5 rounded-[9px] backdrop-blur-md ${
-          isRTM
-            ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400'
-            : isNew
-            ? 'bg-blue-500/10 border border-blue-500/25 text-blue-400'
-            : 'bg-amber-500/10 border border-amber-500/25 text-amber-400'
+        {/* Status */}
+        <div className={`absolute top-2.5 left-2.5 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg backdrop-blur-sm ${
+          isRTM  ? 'bg-emerald-500/90 text-white' :
+          isNew  ? 'bg-blue-500/90 text-white' :
+                   'bg-amber-500/90 text-white'
         }`}>
-          <StatusIcon size={11} weight="duotone" />
+          <StatusIcon size={10} weight="fill" />
           {statusLabel}
         </div>
 
-        {/* RERA badge */}
+        {/* RERA */}
         {project.rera_number && (
-          <div className="absolute top-3.5 right-3.5 flex items-center gap-1 text-[10px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-1.5 rounded-[9px] backdrop-blur-md">
-            <SealCheck size={11} weight="duotone" />
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[10px] font-bold text-white bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-lg">
+            <SealCheck size={10} weight="fill" />
             RERA
           </div>
         )}
       </div>
 
-      {/* ── Content ── */}
-      <div className="px-5 pt-4 pb-5">
-
-        {/* Name + location */}
-        <div className="mb-3">
-          <h3 className="text-[18px] font-black text-white tracking-[-0.03em] leading-tight mb-0.5">
+      {/* Body */}
+      <div className="p-4">
+        {/* Name + builder */}
+        <div className="mb-2.5">
+          <h3 className="text-[15px] font-bold text-gray-900 tracking-tight leading-snug">
             {project.name}
           </h3>
-          {project.tagline && (
-            <p className="text-[11px] text-[#3a6fff] font-semibold tracking-[0.02em] mb-1.5 opacity-80">
-              {project.tagline}
-            </p>
-          )}
-          <div className="flex items-center gap-1.5 text-[11px] text-[#333]">
-            <MapPin size={11} weight="duotone" className="opacity-60" />
-            <span>{project.builder.name}</span>
-            <span className="text-[#222]">·</span>
-            <span>{project.sector}, {project.city}</span>
+          <div className="flex items-center gap-1 mt-0.5 text-[11px] text-gray-400">
+            <MapPin size={10} weight="duotone" />
+            <span>{project.builder.name} · {project.sector}</span>
           </div>
         </div>
-
-        {/* Design credit */}
-        {(project.architect || project.interior_designer) && (
-          <div className="flex items-center gap-1.5 text-[10px] text-blue-500/60 font-semibold tracking-[0.03em] mb-3">
-            <PaintBrushBroad size={10} weight="duotone" />
-            {project.architect && project.interior_designer
-              ? `${project.architect} × ${project.interior_designer}`
-              : project.architect ?? project.interior_designer}
-          </div>
-        )}
 
         {/* Price */}
-        <div className="mb-1">
-          <p className="text-[26px] font-black text-white tracking-[-0.04em] leading-none">
+        <div className="mb-3">
+          <p className="text-[20px] font-black text-gray-900 tracking-tight leading-none">
             {project.price_range_label}
           </p>
-          <p className="text-[11px] text-[#2a2a2a] font-semibold mt-1 tracking-[0.02em]">
+          <p className="text-[11px] text-gray-400 mt-0.5">
             {uniqueBhk.join(' · ')}
-            {project.possession_label && (
-              <span className="ml-2 text-[#252525]">· {project.possession_label}</span>
-            )}
+            {project.possession_label && ` · ${project.possession_label}`}
           </p>
         </div>
 
-        <div className="h-px bg-[#141414] my-4" />
-
-        {/* Amenities */}
+        {/* Top amenities */}
         {project.top_amenities.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {project.top_amenities.map((a) => {
+          <div className="flex flex-wrap gap-1 mb-3">
+            {project.top_amenities.slice(0, 4).map((a) => {
               const Icon = AMENITY_ICONS[a.category] ?? Buildings
               return (
-                <span
-                  key={a.name}
-                  className="flex items-center gap-1 text-[10.5px] text-[#383838] bg-[#0f0f0f] border border-[#181818] px-2.5 py-[5px] rounded-full font-medium"
-                >
-                  <Icon size={12} weight="duotone" className="opacity-70" />
+                <span key={a.name} className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-full font-medium">
+                  <Icon size={10} weight="duotone" />
                   {a.name}
                 </span>
               )
@@ -172,33 +139,36 @@ export default function ProjectCard({ project }: Props) {
 
         {/* Connectivity */}
         {project.top_connectivity.length > 0 && (
-          <div className="flex flex-wrap gap-3 mb-4">
-            {project.top_connectivity.map((c) => {
+          <div className="flex flex-wrap gap-2.5 mb-3">
+            {project.top_connectivity.slice(0, 2).map((c) => {
               const Icon = CONN_ICONS[c.type] ?? Path
               return (
-                <span
-                  key={c.name}
-                  className="flex items-center gap-1.5 text-[10.5px] text-[#2a2a2a] font-medium"
-                >
-                  <Icon size={13} weight="duotone" className="opacity-50" />
-                  {c.distance_km ? `${c.distance_km}km · ` : ''}{c.name}
+                <span key={c.name} className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
+                  <Icon size={11} weight="duotone" />
+                  {c.name}
                 </span>
               )
             })}
           </div>
         )}
 
-        {/* Ask AI CTA */}
-        <button
-          onClick={handleAskAI}
-          className="w-full flex items-center justify-between gap-2 bg-[#0f0f0f] hover:bg-[#141422] border border-[#1a1a1a] hover:border-blue-500/20 rounded-xl px-4 py-2.5 transition-all duration-200 group/btn"
-        >
-          <span className="flex items-center gap-2 text-[11.5px] text-[#333] group-hover/btn:text-blue-400 font-semibold transition-colors">
-            <SparkleIcon size={13} weight="duotone" className="text-blue-500/50 group-hover/btn:text-blue-400 transition-colors" />
-            Ask AI about this property
-          </span>
-          <ArrowRight size={13} className="text-[#222] group-hover/btn:text-blue-400 transition-colors" />
-        </button>
+        {/* Actions */}
+        <div className="flex gap-2 pt-2 border-t border-gray-50">
+          <button
+            onClick={() => onDetailOpen?.(project)}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold py-2 rounded-xl transition-colors"
+          >
+            View Details
+            <ArrowRight size={11} weight="bold" />
+          </button>
+          <button
+            onClick={handleAskAI}
+            className="flex items-center justify-center gap-1 bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-blue-600 text-[11px] font-semibold px-3 py-2 rounded-xl transition-colors border border-gray-100"
+            title="Ask AI"
+          >
+            <Sparkle size={13} weight="duotone" />
+          </button>
+        </div>
       </div>
     </div>
   )

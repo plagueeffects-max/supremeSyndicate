@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express'
-import { searchProjects } from '../repositories/projectRepository'
+import { searchProjects, getProjectDetail } from '../repositories/projectRepository'
 
 const router = Router()
 
@@ -18,6 +18,21 @@ router.get('/', async (req: Request, res: Response) => {
   } catch (err) {
     console.error('[GET /api/v1/projects]', err)
     res.status(500).json({ error: 'Failed to fetch projects' })
+  }
+})
+
+router.get('/:slug', async (req: Request, res: Response) => {
+  const { slug } = req.params
+  try {
+    const project = await getProjectDetail(slug)
+    if (!project) {
+      res.status(404).json({ error: 'Project not found' })
+      return
+    }
+    res.json({ project })
+  } catch (err) {
+    console.error('[GET /api/v1/projects/:slug]', err)
+    res.status(500).json({ error: 'Failed to fetch project' })
   }
 })
 

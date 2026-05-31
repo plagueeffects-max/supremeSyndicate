@@ -52,3 +52,28 @@ export interface ConnSummary {
   name: string
   distance_km?: number | null
 }
+
+export interface BuilderDetail {
+  name: string
+  slug: string
+  tagline: string | null
+  description: string | null
+  founded_year: number | null
+  headquarters: string | null
+  website: string | null
+  credai_member: boolean
+  delivered_units: number | null
+  delivered_projects: string[]
+  ongoing_projects: string[]
+  awards: string[]
+}
+
+export interface ProjectDetail extends ProjectCard {
+  long_description: string | null
+  design_theme: string | null
+  total_units: number | null
+  marketing_claims: string[]
+  all_amenities: { name: string; category: string }[]
+  all_connectivity: { type: string; name: string; distance_km: number | null }[]
+  builder_detail: BuilderDetail
+}

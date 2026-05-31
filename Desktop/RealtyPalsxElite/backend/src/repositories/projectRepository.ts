@@ -1,5 +1,5 @@
 import { prisma } from '../lib/db'
-import type { ProjectCard, UnitTypeSummary, AmenitySummary, ConnSummary } from '../types/project'
+import type { ProjectCard, ProjectDetail, UnitTypeSummary, AmenitySummary, ConnSummary } from '../types/project'
 
 const CATEGORY_ORDER = ['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking'] as const
 const CONN_PRIORITY = ['metro', 'airport', 'road'] as const
@@ -52,6 +52,47 @@ export async function getProjectBySlug(slug: string): Promise<ProjectCard | null
     },
   })
   return project ? toProjectCard(project) : null
+}
+
+export async function getProjectDetail(slug: string): Promise<ProjectDetail | null> {
+  const project = await prisma.project.findUnique({
+    where: { slug },
+    include: {
+      builder: true,
+      unit_types: { orderBy: { bhk: 'asc' } },
+      amenities: true,
+      connectivity: true,
+      images: { orderBy: { sort_order: 'asc' } },
+    },
+  })
+  if (!project) return null
+
+  const card = toProjectCard(project)
+  const b = project.builder
+
+  return {
+    ...card,
+    long_description: (project as any).long_description ?? null,
+    design_theme: (project as any).design_theme ?? null,
+    total_units: (project as any).total_units ?? null,
+    marketing_claims: (project as any).marketing_claims ?? [],
+    all_amenities: project.amenities.map((a: any) => ({ name: a.name, category: a.category })),
+    all_connectivity: project.connectivity.map((c: any) => ({ type: c.type, name: c.name, distance_km: c.distance_km })),
+    builder_detail: {
+      name: b.name,
+      slug: b.slug,
+      tagline: b.tagline ?? null,
+      description: b.description ?? null,
+      founded_year: b.founded_year ?? null,
+      headquarters: b.headquarters ?? null,
+      website: b.website ?? null,
+      credai_member: b.credai_member ?? false,
+      delivered_units: b.delivered_units ?? null,
+      delivered_projects: b.delivered_projects ?? [],
+      ongoing_projects: b.ongoing_projects ?? [],
+      awards: b.awards ?? [],
+    },
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

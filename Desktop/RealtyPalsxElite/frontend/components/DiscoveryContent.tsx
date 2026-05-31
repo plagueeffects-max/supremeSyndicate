@@ -4,7 +4,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChatMessage } from '@/types/property';
+import type { ProjectCard as ProjectCardType } from '@/types/project';
 import ProjectCard from '@/components/ProjectCard';
+import ProjectDetailPanel from '@/components/ProjectDetailPanel';
 import PropertyDetailView from '@/components/PropertyDetailView';
 import AIThinkingIndicator from '@/components/AIThinkingIndicator';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -46,6 +48,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
   const [resolvedFields, setResolvedFields] = useState<{
     property_type?: boolean;
     bhk?: boolean;
@@ -723,11 +726,15 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             message.intent?.is_general_query === true;
           if (!message.properties || message.properties.length === 0 || isGeneralOrComparison) return null;
           return (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl overflow-hidden">
-              {message.properties.map((property) => (
-                <div key={property.id}>
-                  <ProjectCard project={property} userId={userId} />
-                </div>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full overflow-hidden">
+              {message.properties.map((property, pi) => (
+                <ProjectCard
+                  key={property.id}
+                  project={property}
+                  userId={userId}
+                  index={pi}
+                  onDetailOpen={setDetailProject}
+                />
               ))}
             </div>
           );
@@ -927,6 +934,9 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
 
       {/* Toast */}
       {toast && <Toast message={toast.message} onClose={() => setToast(null)} />}
+
+      {/* Project detail slide-over */}
+      <ProjectDetailPanel project={detailProject} onClose={() => setDetailProject(null)} />
 
     </div>
   );
