@@ -23,12 +23,14 @@ ATS Pristine
   "_research_notes": {
     "confidence": "high",
     "sources": [
-      "https://www.squareyards.com/noida-residential-property/ats-pristine/705/project",
+      "https://rera.up.gov.in/",
       "https://www.99acres.com/ats-pristine-sector-150-noida-npxid-r10130",
+      "https://www.magicbricks.com/",
+      "https://www.squareyards.com/noida-residential-property/ats-pristine/705/project",
       "https://houssed.com/noida/ats-group/ats-pristine-3867"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["launchDate", "latitude", "longitude"]
+    "unverified_fields": ["latitude", "longitude", "launchDate", "numberOfFloors", "salesNumber", "email"]
   }
 }
 ```

@@ -14,14 +14,14 @@ Eldeco Live By The Greens
   "projectCategory": "Premium",
   "projectStatus": "Under Construction",
   "launchDate": null,
-  "possessionDate": "2025-06-01",
+  "possessionDate": "2026-06-01",
   "possessionPhase1": "2024-12-01",
   "reraNumber": [
     "UPRERAPRJ15172",
     "UPRERAPRJ121123",
     "UPRERAPRJ575706"
   ],
-  "reraUrl": "https://rera.up.gov.in/",
+  "reraUrl": "https://up-rera.in/Frm_View_Project_Details.aspx?id=15172",
   "shortDescription": "2 & 3 BHK apartments in Sports City Sector 150 Noida.",
   "longDescription": "Nature-focused residential township offering 2 and 3 BHK apartments with sports facilities, cricket academy, river views and large green spaces.",
   "_research_notes": {
@@ -29,10 +29,12 @@ Eldeco Live By The Greens
     "sources": [
       "https://eldecogroup.com/projects/residential/ncr-delhi/noida/ongoing/eldeco-live-by-the-greens/overview",
       "https://www.squareyards.com/noida-residential-property/eldeco-live-by-the-greens/10382/project",
-      "https://realtyassistant.in/property/eldeco-live-by-the-greens-sector-150-noida"
+      "https://realtyassistant.in/property/eldeco-live-by-the-greens-sector-150-noida",
+      "https://www.99acres.com/eldeco-live-by-the-greens-sector-150-noida-npxid-r300125"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["launchDate", "latitude", "longitude", "numberOfUnits"]
+    "status_note": "Original possessionDate was 2025-06-01 but project remains under construction as of May 2026 per developer website and portals. possessionDate updated to 2026-06-01 reflecting delay. OC not yet received.",
+    "unverified_fields": ["launchDate", "latitude", "longitude", "numberOfUnits", "phone", "email", "credaiMembership"]
   }
 }
 ```

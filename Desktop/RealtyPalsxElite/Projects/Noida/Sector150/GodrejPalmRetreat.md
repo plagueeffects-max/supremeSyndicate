@@ -12,11 +12,11 @@ Godrej Palm Retreat
   "projectSlug": "godrej-palm-retreat-sector-150-noida",
   "projectType": "Residential",
   "projectCategory": "Luxury",
-  "projectStatus": "Under Construction",
+  "projectStatus": "Ready to Move",
   "launchDate": null,
-  "possessionDate": "2025-12-01",
+  "possessionDate": "2026-03-01",
   "possessionPhase1": "2025-06-01",
-  "possessionPhase2": "2025-12-01",
+  "possessionPhase2": "2026-03-01",
   "reraNumber": [
     "UPRERAPRJ745601",
     "UPRERAPRJ124632"
@@ -26,14 +26,17 @@ Godrej Palm Retreat
   "shortDescription": "Luxury low-rise resort themed residences in Sector 150 Noida.",
   "longDescription": "Godrej Palm Retreat is a luxury resort-style residential development in Sector 150 Noida featuring low-rise low-density homes, extensive green spaces, rooftop amenities, clubhouse, tropical landscaping and sports facilities.",
   "_research_notes": {
-    "confidence": "medium",
+    "confidence": "high",
     "sources": [
       "https://www.godrejproperties.com/noida/residential/godrej-palm-retreat",
       "https://www.99acres.com/godrej-palm-retreat-sector-150-noida-npxid-r333137",
       "https://www.squareyards.com/noida-residential-property/godrej-palm-retreat/10611/project",
-      "https://www.keytel.in/godrej-palm-retreat-phase-2/"
+      "https://www.keytel.in/godrej-palm-retreat-phase-2/",
+      "https://www.whitehat.realty/projects/godrej-palm-retreat",
+      "https://rera.up.gov.in/"
     ],
     "verified_date": "2026-05-31",
+    "status_note": "Phase 1 possession commenced Jun 2025. OC applied mid-Dec 2025, possession handed over from Mar 2026. Multiple towers completed and occupied as of May 2026. Status updated from Under Construction to Ready to Move.",
     "unverified_fields": ["latitude", "longitude", "launchDate", "numberOfUnits", "landArea"]
   }
 }

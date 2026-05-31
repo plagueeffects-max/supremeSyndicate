@@ -16,7 +16,7 @@ Ace Parkway
   "possession_date": "2022-06-01",
   "launch_date": "2017-03-01",
   "rera_number": "UPRERAPRJ4514",
-  "rera_url": "https://rera.up.gov.in/",
+  "rera_url": "https://www.up-rera.in/ViewProjectInDetailPublicView.aspx?id=4514",
   "city": "Noida",
   "sector": "Sector 150",
   "state": "Uttar Pradesh",

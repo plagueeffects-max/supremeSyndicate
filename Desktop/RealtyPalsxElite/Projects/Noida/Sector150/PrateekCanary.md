@@ -31,7 +31,7 @@ Prateek Canary
       "https://www.homesnut.com/article/prateek-canary-sector-150-noida-review-price-map-rera"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["latitude", "longitude", "launchDate"]
+    "unverified_fields": ["latitude", "longitude", "launchDate", "phone", "email", "credaiMember"]
   }
 }
 ```
