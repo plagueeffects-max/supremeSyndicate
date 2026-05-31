@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { Map, Users } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatedText } from '@/components/ui/animated-shiny-text';
 import { createClient } from '@/lib/supabase';
+import { API_BASE } from '@/lib/env';
 
 interface SidebarProps {
   activeView?: 'discovery' | 'saved' | 'compare' | 'value-estimator' | 'market-intelligence' | 'lead-snapshot';
@@ -18,6 +19,20 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [recentSessions, setRecentSessions] = useState<{ id: string; label: string }[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    setSessionsLoading(true);
+    fetch(`${API_BASE}/chat/session/list`, {
+      headers: { 'X-User-Id': userId },
+    })
+      .then((r) => r.json())
+      .then((data) => setRecentSessions(data.sessions ?? []))
+      .catch(() => setRecentSessions([]))
+      .finally(() => setSessionsLoading(false));
+  }, [userId]);
 
   const routeToView: Record<string, 'discovery' | 'saved' | 'compare' | 'value-estimator' | 'market-intelligence' | 'lead-snapshot'> = {
     '/discover': 'discovery',
@@ -44,12 +59,6 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
     { id: 'value-estimator', label: 'Value Estimator', icon: '/images/icons/value-estimator.svg', href: '/value-estimator' },
     { id: 'market-intelligence', label: 'Market Intelligence', icon: <Map size={24} />, href: '/market-intelligence' },
     { id: 'lead-snapshot', label: 'Lead Snapshot', icon: <Users size={24} />, href: '/lead-snapshot' },
-  ];
-
-  // Static placeholder recent chats for MVP
-  const recentChats = [
-    { id: 'placeholder-1', label: '3BHK in sector 150', icon: '/images/icons/recent.svg' },
-    { id: 'placeholder-2', label: 'Commercial Plots', icon: '/images/icons/recent.svg' },
   ];
 
   const closeMobile = () => setMobileOpen(false);
@@ -171,25 +180,41 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
             ))}
           </div>
 
-          {/* Recent Section - Static placeholders for MVP */}
-          <div className="mb-6">
-            <div className="text-xs text-gray-500 uppercase tracking-wider mb-2 px-4 font-medium">Recent</div>
-            <div className="space-y-1">
-              {recentChats.map((chat) => (
-                <div
-                  key={chat.id}
-                  className="group relative w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 cursor-default"
-                  title="Coming soon"
-                >
-                  <Image src={chat.icon} alt="" width={20} height={20} className="flex-shrink-0 grayscale opacity-40" />
-                  <span className="text-sm opacity-60">{chat.label}</span>
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                    Soon
-                  </span>
-                </div>
-              ))}
+          {userId && (
+            <div className="mb-6">
+              <div className="text-xs text-gray-500 uppercase tracking-wider mb-2 px-4 font-medium">Recent</div>
+              <div className="space-y-1">
+                {sessionsLoading ? (
+                  [1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-lg">
+                      <div className="w-5 h-5 bg-gray-200 rounded animate-pulse flex-shrink-0" />
+                      <div className="h-3 bg-gray-200 rounded animate-pulse flex-1" />
+                    </div>
+                  ))
+                ) : recentSessions.length === 0 ? (
+                  <div className="px-4 py-2 text-[12px] text-gray-400">No chats yet</div>
+                ) : (
+                  recentSessions.map((session) => (
+                    <Link
+                      key={session.id}
+                      href={`/discover?session=${session.id}`}
+                      onClick={closeMobile}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-white/80 hover:text-blue-600 border border-transparent hover:border-blue-100 transition-all duration-200 group"
+                    >
+                      <Image
+                        src="/images/icons/recent.svg"
+                        alt=""
+                        width={18}
+                        height={18}
+                        className="flex-shrink-0 grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all"
+                      />
+                      <span className="text-sm truncate">{session.label}</span>
+                    </Link>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Logout Button */}
