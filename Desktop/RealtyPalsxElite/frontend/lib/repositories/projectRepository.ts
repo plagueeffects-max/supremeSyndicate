@@ -10,6 +10,7 @@ export interface SearchFilters {
   bhk?: number
   budget_min_cr?: number
   budget_max_cr?: number
+  possession_year_max?: number
 }
 
 export async function searchProjects(filters: SearchFilters): Promise<ProjectCard[]> {
@@ -22,6 +23,11 @@ export async function searchProjects(filters: SearchFilters): Promise<ProjectCar
     where: {
       ...(filters.city && { city: filters.city }),
       ...(filters.sector && { sector: filters.sector }),
+      ...(filters.possession_year_max != null && {
+        possession_date: {
+          lte: new Date(filters.possession_year_max, 11, 31),
+        },
+      }),
       ...(unitConditions.length > 0 && {
         unit_types: { some: unitConditions.length === 1 ? unitConditions[0] : { AND: unitConditions } },
       }),

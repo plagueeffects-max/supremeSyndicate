@@ -29,6 +29,7 @@ OUTPUT SHAPE (omit fields you cannot confidently extract — do NOT guess):
   "sector": <sector number as integer>,
   "city": <string>,
   "project_name": <string>,
+  "possession_year_max": <4-digit year integer, e.g. 2026 — only when user specifies a delivery deadline>,
   "conversational_reply": <string | null>,
   "is_general_query": <boolean>
 }
@@ -116,6 +117,14 @@ CRITICAL RULES:
    - "NoBroker vs Housing.com" → {"is_general_query":true}
    - "tell me about Mahagun Mywoods" → {"project_name":"Mahagun Mywoods","is_general_query":false} ← real RERA project
 
+10. POSSESSION TIMELINE (field: possession_year_max):
+   Extract ONLY when user specifies a delivery/possession deadline by year.
+   - "ready by 2026" / "delivering by 2026" / "possession in 2026" → possession_year_max: 2026
+   - "by end of 2027" → possession_year_max: 2027
+   - "within 2 years" (from current year ~2026) → possession_year_max: 2028
+   - "immediate" / "ready to move" → use possession_status: "ready_to_move" instead
+   - Do NOT extract if no specific year or timeframe is mentioned.
+
 9. CONVERSATION CONTEXT (use the chat history you receive):
    - If the assistant's immediately preceding message asked a question (e.g., "Which city are you looking in?", "What is your budget?", "How many BHK?"), the user's current reply is almost certainly a direct answer to that question — extract accordingly.
    - Examples:
@@ -178,7 +187,13 @@ User: "tell me about Peakpals"
 → {"is_general_query":true}
 
 User: "what is ats pristine"
-→ {"project_name":"ATS Pristine","is_general_query":true}`,
+→ {"project_name":"ATS Pristine","is_general_query":true}
+
+User: "2026 tak milne wala flat chahiye sector 150 mein"
+→ {"possession_year_max":2026,"sector":150,"city":"Noida","property_type":"flat","is_general_query":false}
+
+User: "show me properties delivering by 2026"
+→ {"possession_year_max":2026,"is_general_query":false}`,
 
 
   // ─────────────────────────────────────────────────────────────

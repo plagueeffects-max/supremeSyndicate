@@ -119,6 +119,9 @@ export async function POST(request: NextRequest) {
       under_construction: extracted.possession_status === 'under_construction',
     }
   }
+  if (extracted.possession_year_max && typeof extracted.possession_year_max === 'number') {
+    updates.possession_year_max = extracted.possession_year_max as number
+  }
 
   const newIntent = mergeIntentState(existingIntent, updates)
 
@@ -207,6 +210,7 @@ export async function POST(request: NextRequest) {
       bhk: newIntent.bhk,
       budget_min_cr: newIntent.budget?.min != null ? newIntent.budget.min / 10_000_000 : undefined,
       budget_max_cr: newIntent.budget?.max != null ? newIntent.budget.max / 10_000_000 : undefined,
+      possession_year_max: newIntent.possession_year_max,
     })
 
     const projectContext = projects

@@ -16,6 +16,7 @@ export interface IntentState {
   sector?: string; // e.g., "Sector 150"
   city?: string; // e.g., "Noida"
   project_name?: string; // e.g., "Godrej Woods"
+  possession_year_max?: number;
   preferences?: {
     ready_to_move?: boolean;
     under_construction?: boolean;
@@ -31,6 +32,7 @@ export interface IntentState {
     purpose?: boolean;
     timeline?: boolean;
     status?: boolean;
+    possession_year_max?: boolean;
   };
   completenessScore: number; // 0-100
 }
