@@ -29,7 +29,7 @@
       "https://www.htsyndication.com/millennium-post/article/9,750-noida-homebuyers-in-limbo-as-22-realtors-default-on-rs.5,560-cr-dues/94467220"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["possessionDate exact month", "launchDate", "latitude", "longitude"],
+    "unverified_fields": ["possessionDate exact month", "launchDate", "latitude", "longitude", "Tower G units per floor — corrected from anomalous 16 to 6 (unverified)", "numberOfUnits — stated 740 does not reconcile with per-tower floor × unit calculations (~500); 740 may include commercial/service units or parking"],
     "risk_note": "Assotech Limited has significant legal and financial risk. The Supreme Court directed the Delhi High Court to protect interests of ~100 homebuyers who filed a PIL against the winding up of Assotech Private Limited. Noida Authority (May–Oct 2024) issued cancellation notices and referred Assotech to the Economic Offences Wing (EOW) over defaulted dues. Windsor Court itself has OC obtained and is Ready to Move, but Assotech as a developer carries high counterparty risk. Buyers transacting in resale should verify registry and dues independently."
   }
 }
@@ -245,7 +245,7 @@ Pages 4-5.
   {
     "towerName": "G",
     "floors": 14,
-    "unitsPerFloor": 16,
+    "unitsPerFloor": 6,
     "configuration": "3 BHK MUVS"
   },
   {

@@ -2,7 +2,6 @@
 2bhk 1.75-1.87cr
 3bhk 2.1-3.55cr
 4bhk 3.4-4.75cr
-5bhk 3.84-5.2cr
 ---
 
 # 1. Project Information
@@ -265,7 +264,7 @@ Pages 9-17.
 
 ```json
 {
-  "floorPlanCount": 13,
+  "floorPlanCount": 16,
   "floorPlans": [
     "HIG-I Ground",
     "HIG-I Typical",

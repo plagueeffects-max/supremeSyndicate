@@ -16,8 +16,9 @@
   "projectStatus": "Delivered",
   "launchDate": null,
   "possessionDate": "2015",
-  "reraNumber": "UPRERAPRJ9689",
-  "reraUrl": "https://up-rera.in/Frm_View_Project_Details.aspx?id=9689",
+  "reraNumber": "UPRERAPRJ10533",
+  "reraUrl": "https://up-rera.in/Frm_View_Project_Details.aspx?id=10533",
+  "additionalReraNumbers": ["UPRERAPRJ9689"],
   "description": "Energy efficient residential township spread across 15 acres in Sector 78 Noida.",
   "shortDescription": "Affordable housing township in Sector 78 Noida.",
   "longDescription": "A 15-acre residential township offering 1 BHK, 2 BHK, 3 BHK and 4 BHK residences with sports amenities, clubhouse, commercial facilities and landscaped open spaces. Developed jointly by IITL Group and Nimbus Group.",
@@ -30,7 +31,7 @@
       "https://www.zricks.com/IITL-Nimbus-The-Hyde-Park-Sector-78-Noida/2529"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["possessionDate exact month", "launchDate", "latitude", "longitude", "pincode exact"],
+    "unverified_fields": ["possessionDate exact month", "launchDate", "latitude", "longitude", "pincode exact", "primary RERA — UPRERAPRJ10533 used as primary (cited in sources as UP RERA project page); UPRERAPRJ9689 retained as additionalReraNumbers — verify which is the main registration on up-rera.in"],
     "risk_note": null
   }
 }
@@ -85,7 +86,7 @@ Pages 1,2,12.
 {
   "landArea": 15,
   "landAreaUnit": "Acres",
-  "numberOfTowers": 20,
+  "numberOfTowers": 21,
   "numberOfUnits": null,
   "numberOfFloors": 19,
   "openAreaPercentage": null,

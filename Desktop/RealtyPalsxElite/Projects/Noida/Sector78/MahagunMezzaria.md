@@ -30,7 +30,7 @@
       "https://www.mahagunindia.com/project/mahagun-mmezzaria/"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["latitude", "longitude", "pincode", "numberOfFloors exact count"],
+    "unverified_fields": ["latitude", "longitude", "pincode", "numberOfFloors exact count", "tower names — used placeholders (Tower 1–8)", "configuration details, unit areas, floor plans"],
     "risk_note": "Mahagun Group has confirmed RERA disputes on other projects (Mahagun Meadows, Mahagun Mantra registry delays). Mezzaria itself is reported as Ready to Move since Q2 2019, developed under NEXGEN INFRACON PVT. LTD (Mahagun Group entity). Buyers should verify OC status with UP RERA before transacting."
   }
 }
@@ -141,13 +141,14 @@ From exterior render.
 
 ```json
 {
-  "towerCount": 3,
+  "towerCount": 8,
+  "towerNames": ["Tower 1", "Tower 2", "Tower 3", "Tower 4", "Tower 5", "Tower 6", "Tower 7", "Tower 8"],
   "towerType": "Luxury High Rise",
   "floors": "Approx 30+"
 }
 ```
 
-Derived visually from page 3 render. 
+Section 4 states 8 towers (730 units / 8 towers ≈ 91 units per tower, consistent with luxury high-rise). Visual count from page 3 render was an undercount. Tower names are placeholders — not confirmed from brochure. 
 
 ---
 
