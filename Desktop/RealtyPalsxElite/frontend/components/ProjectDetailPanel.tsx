@@ -91,12 +91,12 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-            className="fixed right-0 top-0 h-full w-full sm:w-[520px] lg:w-[600px] bg-white shadow-2xl z-50 flex flex-col overflow-hidden"
+            className="fixed right-0 top-0 h-full w-full sm:w-[600px] lg:w-[680px] xl:w-[720px] bg-[#fafafa] shadow-2xl z-50 flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="relative flex-shrink-0">
               {/* Hero image */}
-              <div className="relative h-56 bg-gray-100 overflow-hidden">
+              <div className="relative h-72 bg-gray-100 overflow-hidden">
                 {currentImg ? (
                   <Image src={currentImg} alt={d?.name ?? ''} fill unoptimized className="object-cover" sizes="600px" />
                 ) : (
@@ -161,7 +161,7 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-0.5 mt-3 bg-gray-100 rounded-xl p-1">
+                <div className="flex gap-0.5 mt-4 bg-gray-100 rounded-xl p-1">
                   {SECTION_TABS.map((tab) => (
                     <button
                       key={tab}
@@ -178,7 +178,7 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
             </div>
 
             {/* Body — scrollable */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto bg-[#fafafa]">
               {loading && (
                 <div className="flex items-center justify-center py-20">
                   <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -188,15 +188,15 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
               {!loading && activeTab === 'Overview' && (
                 <div className="p-5 space-y-6">
                   {/* Key stats */}
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-3.5">
                     {[
                       { label: 'Towers', value: d?.total_towers ? `${d.total_towers}` : '—' },
                       { label: 'Units', value: (detail?.total_units ?? (d as any)?.total_units) ? `${(detail?.total_units ?? (d as any)?.total_units)}` : '—' },
                       { label: 'Land', value: d?.land_area_acres ? `${d.land_area_acres} Ac` : '—' },
                     ].map((s) => (
-                      <div key={s.label} className="bg-gray-50 rounded-xl p-3 text-center">
-                        <p className="text-[18px] font-black text-gray-900">{s.value}</p>
-                        <p className="text-[10px] text-gray-400 font-medium mt-0.5">{s.label}</p>
+                      <div key={s.label} className="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm">
+                        <p className="text-[20px] font-black text-gray-900">{s.value}</p>
+                        <p className="text-[10px] text-gray-400 font-semibold mt-0.5 uppercase tracking-wider">{s.label}</p>
                       </div>
                     ))}
                   </div>
@@ -275,8 +275,8 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                   <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Unit Configurations</p>
 
                   {(d?.unit_types ?? []).map((u, i) => (
-                    <div key={i} className="border border-gray-100 rounded-2xl overflow-hidden">
-                      <div className="bg-gray-50 px-4 py-2.5 flex items-center justify-between">
+                    <div key={i} className="border border-gray-100 rounded-2xl overflow-hidden bg-white shadow-sm">
+                      <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 px-5 py-3 flex items-center justify-between border-b border-gray-100">
                         <span className="text-[13px] font-bold text-gray-900">{u.name}</span>
                         <span className="text-[13px] font-black text-blue-600">
                           {u.price_label ?? (u.price_min_cr != null && u.price_max_cr != null
@@ -286,7 +286,7 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                             : 'Price on request')}
                         </span>
                       </div>
-                      <div className="px-4 py-3 grid grid-cols-2 gap-2">
+                      <div className="px-5 py-4 grid grid-cols-2 gap-3">
                         <div className="flex items-center gap-2 text-[12px] text-gray-600">
                           <BedDouble size={14} className="text-gray-400" />
                           <span>{u.bhk} Bedrooms</span>
@@ -306,7 +306,7 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                       </div>
 
                       {/* Floor plan placeholder */}
-                      <div className="mx-4 mb-4 rounded-xl bg-gradient-to-br from-gray-50 to-blue-50/30 border border-dashed border-gray-200 h-36 flex flex-col items-center justify-center gap-2">
+                      <div className="mx-5 mb-5 rounded-2xl bg-gradient-to-br from-slate-50 via-blue-50/20 to-indigo-50/30 border border-dashed border-blue-100 h-44 flex flex-col items-center justify-center gap-2">
                         <Layers size={24} className="text-gray-300" />
                         <p className="text-[11px] text-gray-400 font-medium">Floor Plan</p>
                         <p className="text-[10px] text-gray-300">Image coming soon</p>
@@ -448,7 +448,7 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                   }))
                   onClose()
                 }}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl text-[13px] transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold py-4 rounded-2xl text-[14px] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
               >
                 <MapTrifold size={16} weight="duotone" />
                 Request Site Visit

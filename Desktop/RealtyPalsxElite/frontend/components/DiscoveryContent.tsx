@@ -726,7 +726,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             message.intent?.is_general_query === true;
           if (!message.properties || message.properties.length === 0 || isGeneralOrComparison) return null;
           return (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full overflow-hidden">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl overflow-hidden">
               {message.properties.map((property, pi) => (
                 <ProjectCard
                   key={property.id}

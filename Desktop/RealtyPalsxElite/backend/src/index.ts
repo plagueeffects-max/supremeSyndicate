@@ -8,6 +8,7 @@ import chatSessionRouter from './routes/chatSession'
 import chatIntentRouter from './routes/chatIntent'
 import projectsRouter from './routes/projects'
 import sectorsRouter from './routes/sectors'
+import savedRouter from './routes/saved'
 
 const app = express()
 const PORT = process.env.PORT ?? 4000
@@ -26,6 +27,7 @@ app.use('/api/v1/chat/intent', chatIntentRouter)
 app.use('/api/v1/chat', chatRouter)
 app.use('/api/v1/projects', projectsRouter)
 app.use('/api/v1/sectors', sectorsRouter)
+app.use('/api/v1/saved', savedRouter)
 
 app.get('/health', async (_, res) => {
   try {

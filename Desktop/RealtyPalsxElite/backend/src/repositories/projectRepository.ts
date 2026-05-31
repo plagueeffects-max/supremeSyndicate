@@ -96,7 +96,7 @@ export async function getProjectDetail(slug: string): Promise<ProjectDetail | nu
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toProjectCard(p: any): ProjectCard {
+export function toProjectCard(p: any): ProjectCard {
   const allPrices = p.unit_types
     .flatMap((u: any) => [u.price_min_cr, u.price_max_cr])
     .filter((v: any): v is number => v != null)
