@@ -17,7 +17,7 @@
   "launchDate": null,
   "possessionDate": "October 2014",
   "reraNumber": "UPRERAPRJ9744",
-  "reraUrl": "https://uprera.azurewebsites.net/ViewProjectInDetailPublicView.aspx?id=9744",
+  "reraUrl": "https://www.up-rera.in/Frm_View_Project_Details.aspx?id=9744",
   "shortDescription": "Nature inspired residential township on Noida Expressway.",
   "longDescription": "A large integrated residential township featuring 2, 3 and 4 BHK apartments, central parks, clubhouse, sports facilities, podium amenities and landscaped green spaces.",
   "_research_notes": {
@@ -93,7 +93,7 @@ Master plan and salient features.
 {
   "landArea": null,
   "landAreaUnit": "Acres",
-  "numberOfTowers": 22,
+  "numberOfTowers": 20,
   "numberOfUnits": null,
   "numberOfFloors": {
     "minimum": 14,
@@ -272,7 +272,7 @@ The tower matrix is visible on Page 4.
 
 ```json
 {
-  "towerCount": 22,
+  "towerCount": 20,
   "towerNames": [
     "A","B","C","D","E","F","G","H",
     "I","J","K","N","O","P","Q",

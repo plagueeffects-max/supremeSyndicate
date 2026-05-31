@@ -31,6 +31,7 @@
     ],
     "verified_date": "2026-05-31",
     "unverified_fields": ["launchDate", "RERA URL — specific project page URL not confirmed; reraUrl set to UP RERA homepage", "coordinates"],
+    "rera_note": "Registration format differs from typical UPRERAPRJ style — verify at up-rera.in",
     "risk_note": "Paras Buildtech has verified disputes with homebuyers at Tierea: developer refused to recognize the RWA (Residents Welfare Association) and filed false FIRs against protesting residents. Complaints of electricity disconnections, opaque billing, and maintenance malpractice documented by Track2Realty. RERA registration listed as UP-RERA-PRJ-14831 from multiple listing sources. Project shows as delivered but buyer satisfaction history is poor — advise buyers to verify OC and current RWA status before purchase."
   }
 }
@@ -90,7 +91,7 @@ Pages 2 and 12.
 {
   "landArea": 30,
   "landAreaUnit": "Acres",
-  "numberOfTowers": 19,
+  "numberOfTowers": 20,
   "numberOfUnits": 2800,
   "numberOfFloors": 19,
   "apartmentsPerFloor": null,
@@ -355,8 +356,7 @@ Location map on Page 12.
     "Noida Expressway"
   ],
   "nearbyProjects": [
-    "Paras Seasons",
-    "Paras Tierea"
+    "Paras Seasons"
   ],
   "cityConnectivity": [
     "Noida",

@@ -29,7 +29,7 @@
       "https://www.homes247.in/property/noida/sector-137/exotica-fresco-103156"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["reraUrl direct project page", "launchDate exact", "pincode confirmed"],
+    "unverified_fields": ["reraUrl direct project page", "launchDate exact", "pincode confirmed", "greenAreaPercentage"],
     "notes": "RERA number UPRERAPRJ4172 found on multiple listing sites (squareyards, 99acres, 360realtors). Possession March 2015 confirmed across sources. Project delivered and ready to move. Developer official website confirmed as exoticahousing.in. Coordinates approximate from listing data — not surveyed. RERA URL points to UP RERA homepage as specific project page URL could not be confirmed."
   }
 }
@@ -95,7 +95,7 @@ Pages 1-2.
   "apartmentsPerFloor": null,
   "apartmentsPerAcre": null,
   "openAreaPercentage": 80,
-  "greenAreaPercentage": true,
+  "greenAreaPercentage": null,
   "cornerPlot": false,
   "facingDirection": null,
   "biodiversityParkAdjacent": true

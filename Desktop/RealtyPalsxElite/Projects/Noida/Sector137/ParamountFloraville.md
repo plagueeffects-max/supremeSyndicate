@@ -1,7 +1,6 @@
 # Paramount Floraville
 2bhk 1.2-1.43cr
 3bhk 1.46-2.25cr
-4bhk 4.43cr
 ---
 
 # 1. Project Information
@@ -30,6 +29,9 @@
     ],
     "verified_date": "2026-05-31",
     "unverified_fields": ["reraNumber specific UPRERAPRJ ID", "possessionDate", "launchDate", "coordinates"],
+    "rera_note": "RERA project ID 7722 at up-rera.in but UPRERAPRJ number not found.",
+    "area_note": "3BHK+Utility (1265 sqft) appears smaller than 2BHK+Study+Utility (1365 sqft) — verify floor plans before buyer-facing display",
+    "4bhk_note": "Header previously showed '4bhk 4.43cr' but no 4BHK configuration exists in floor plan sections — removed from header pending verification.",
     "risk_note": "Verified buyer complaints of possession delays at Paramount Floraville: buyers reported not receiving possession despite completing payments, builder claimed completion certificate not granted by authorities. Unjustified demand letters with no charge breakup reported. Builder accused of unresponsiveness and harassment. Project is listed as Ready to Move on listing sites but due diligence is strongly advised. RERA URL (id=7722) found on up-rera.in but specific UPRERAPRJ number could not be confirmed — confirm directly at https://www.up-rera.in/ before recommending."
   }
 }

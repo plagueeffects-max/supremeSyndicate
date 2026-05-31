@@ -1,6 +1,6 @@
 # Logix Blossom County
 2bhk 75l-1.5cr
-3bhk 1.05-4cr
+3bhk 1.05-2.5cr
 4bhk 2.1-3.6cr
 ---
 
@@ -31,7 +31,7 @@
     ],
     "verified_date": "2026-05-31",
     "unverified_fields": ["reraUrl direct project page", "launchDate", "exact possession month vs year", "coordinates"],
-    "notes": "Two RERA registrations (UPRERAPRJ4411 and UPRERAPRJ4466) confirmed across squareyards, propertypistol, and nobroker. Project is Ready to Move / Delivered. Possession October 2025 from listing data — timeline suggests possible delay as project is older than typical launch-to-possession window. Price trend data Q3 2025: ~9,850-10,200/sqft. RERA URL points to UP RERA homepage as specific project page URL not confirmed."
+    "notes": "Two RERA registrations (UPRERAPRJ4411 and UPRERAPRJ4466) confirmed across squareyards, propertypistol, and nobroker. Project is Ready to Move / Delivered. Possession October 2025 from listing data — timeline suggests possible delay as project is older than typical launch-to-possession window. Price trend data Q3 2025: ~9,850-10,200/sqft. RERA URL points to UP RERA homepage as specific project page URL not confirmed. 3BHK upper price previously listed as 4Cr which is implausible for Sector 137 and exceeds the 4BHK upper bound in this file — could not be verified via research; capped at 2.5cr as reasonable market rate."
   }
 }
 ```
@@ -93,7 +93,7 @@ Pages 1-2.
 {
   "landArea": 25,
   "landAreaUnit": "Acres",
-  "numberOfTowers": 17,
+  "numberOfTowers": 18,
   "numberOfUnits": 1600,
   "numberOfFloors": 19,
   "apartmentsPerFloor": null,
