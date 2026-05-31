@@ -1,16 +1,13 @@
-/**
- * Environment-derived config. No hardcoded URLs.
- * Set NEXT_PUBLIC_API_URL in .env.local (see .env.example).
- */
-
 function getApiBase(): string {
-  const base = process.env.NEXT_PUBLIC_API_URL;
-  if (!base || !base.startsWith('http')) {
+  const base = process.env.NEXT_PUBLIC_API_URL
+  if (!base) {
     throw new Error(
-      'NEXT_PUBLIC_API_URL is required. Set it in .env.local (e.g. NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1).'
-    );
+      'NEXT_PUBLIC_API_URL is required. Set it in .env.local\n' +
+      'Example: NEXT_PUBLIC_API_URL=/api/v1'
+    )
   }
-  return base.replace(/\/$/, '');
+  // Accept both relative paths (/api/v1) and absolute URLs (http://...)
+  return base.replace(/\/$/, '')
 }
 
-export const API_BASE = getApiBase();
+export const API_BASE = getApiBase()
