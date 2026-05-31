@@ -85,11 +85,27 @@ CRITICAL RULES:
    - "50 to 70 lakh" / "50 se 70 lakh" → budget_min: 5000000, budget_max: 7000000
    - "under X" / "max X" → budget_max only
    - "above X" / "minimum X" → budget_min only
+   HINDI/HINGLISH number words:
+   - "ek crore" → 10000000
+   - "do crore" → 20000000
+   - "teen crore" → 30000000
+   - "char crore" → 40000000
+   - "paanch crore" / "panch crore" → 50000000
+   - "das lakh" → 1000000
+   - "paanch lakh" / "paach lakh" → 500000
+   - "ek crore se kam" / "ek crore tak" → budget_max: 10000000
+   - "do crore se upar" → budget_min: 20000000
+   - "ek se dhai crore" → budget_min: 10000000, budget_max: 25000000
+   - "dhai crore" → 25000000
 
 5. BHK (normalize variants):
    - "1.5 BHK" → 1; "2.5 BHK" → 2
    - "double bedroom" / "2 rooms" → 2
    - "studio" → 1
+   Hindi/Hinglish BHK:
+   - "do bedroom" / "do BHK" / "2 kamre wala" → 2
+   - "teen BHK" / "teen bedroom" → 3
+   - "ek kamra" / "ek BHK" → 1
 
 6. PROPERTY TYPE:
    - "flat" for apartment, builder floor, house, home, condo
@@ -193,7 +209,22 @@ User: "2026 tak milne wala flat chahiye sector 150 mein"
 → {"possession_year_max":2026,"sector":150,"city":"Noida","property_type":"flat","is_general_query":false}
 
 User: "show me properties delivering by 2026"
-→ {"possession_year_max":2026,"is_general_query":false}`,
+→ {"possession_year_max":2026,"is_general_query":false}
+
+User: "ek crore mein kya milega sector 150 mein"
+→ {"budget_max":10000000,"sector":150,"city":"Noida","is_general_query":false}
+
+User: "do BHK chahiye Noida mein 80 lakh tak"
+→ {"bhk":2,"city":"Noida","budget_max":8000000,"property_type":"flat","is_general_query":false}
+
+User: "sector 150 mein best property kaun si hai"
+→ {"sector":150,"city":"Noida","is_general_query":true}
+
+User: "teen BHK dikhao sector 137 mein under 2 crore"
+→ {"bhk":3,"sector":137,"city":"Noida","budget_max":20000000,"property_type":"flat","is_general_query":false}
+
+User: "ready to move flat chahiye noida mein 1.5 crore mein"
+→ {"possession_status":"ready_to_move","city":"Noida","budget_max":15000000,"property_type":"flat","is_general_query":false}`,
 
 
   // ─────────────────────────────────────────────────────────────

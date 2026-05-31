@@ -6,7 +6,7 @@ import Image from 'next/image'
 import {
   X, CheckCircle2, Clock, Shield, MapPin, Building2, Award,
   Ruler, BedDouble, Bath, ChevronRight, ExternalLink,
-  Sparkles, Star, Trophy, Layers, Phone,
+  Sparkles, Star, Trophy, Layers, Phone, TrendingUp,
 } from 'lucide-react'
 import {
   Subway, AirplaneTakeoff, Path, Buildings, Heart, Tree,
@@ -77,6 +77,36 @@ function buildWhatsAppUrl(project: {
   ]
 
   return `https://wa.me/${number}?text=${encodeURIComponent(lines.join('\n'))}`
+}
+
+const SECTOR_PRICE_HISTORY: Record<string, {
+  trend: string
+  avgPriceRange: string
+  yoyGrowth: string
+  note: string
+  outlook: string
+}> = {
+  'Sector 150': {
+    trend: 'Strong Appreciation',
+    avgPriceRange: '₹8,000 – 17,000/sqft',
+    yoyGrowth: '+12–18% YoY',
+    note: "Noida Expressway's premium corridor. Metro Phase III proximity, DND access, and branded developer concentration drive above-average appreciation.",
+    outlook: 'Continued outperformance expected. Limited land supply.',
+  },
+  'Sector 137': {
+    trend: 'Steady Growth',
+    avgPriceRange: '₹5,500 – 11,000/sqft',
+    yoyGrowth: '+8–14% YoY',
+    note: 'Established sector with most inventory delivered. Good rental yield driven by IT park proximity (Infosys, TCS campuses nearby).',
+    outlook: 'Stable. Most projects ready-to-move — capital preservation market.',
+  },
+  'Sector 78': {
+    trend: 'Mixed — Luxury Segment Leading',
+    avgPriceRange: '₹5,000 – 18,000/sqft',
+    yoyGrowth: '+6–12% YoY',
+    note: 'Wide price band due to product mix from premium to ultra-luxury. Central Noida location with strong connectivity.',
+    outlook: 'Luxury sub-segment outperforming. Entry-level segment stable.',
+  },
 }
 
 const SECTION_TABS = ['Overview', 'Units', 'Amenities', 'Builder'] as const
@@ -325,6 +355,36 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                       </div>
                     </div>
                   )}
+
+                  {/* Price Trends */}
+                  {(() => {
+                    const sectorKey = d?.sector ?? ''
+                    const priceData = SECTOR_PRICE_HISTORY[sectorKey] ?? null
+                    if (!priceData) return null
+                    return (
+                      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
+                            <TrendingUp size={14} className="text-emerald-600" strokeWidth={2} />
+                          </div>
+                          <p className="text-[12px] font-bold text-gray-700">Price Trends — {sectorKey}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          <div className="bg-white rounded-xl p-2.5 border border-emerald-50">
+                            <p className="text-[18px] font-black text-emerald-600">{priceData.yoyGrowth}</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5">Year-on-year</p>
+                          </div>
+                          <div className="bg-white rounded-xl p-2.5 border border-emerald-50">
+                            <p className="text-[13px] font-bold text-gray-900 leading-tight">{priceData.avgPriceRange}</p>
+                            <p className="text-[10px] text-gray-400 mt-0.5">Avg. price/sqft</p>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-gray-600 leading-relaxed mb-1.5">{priceData.note}</p>
+                        <p className="text-[11px] text-emerald-700 font-semibold">Outlook: {priceData.outlook}</p>
+                        <p className="text-[9px] text-gray-400 mt-2">* Indicative market data. Verify with RERA and registered valuers before purchase decisions.</p>
+                      </div>
+                    )
+                  })()}
                 </div>
               )}
 
