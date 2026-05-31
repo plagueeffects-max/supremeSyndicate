@@ -1,116 +1,97 @@
 'use client';
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
+import { createClient } from '@/lib/supabase';
 
 export default function LandingPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const [checking, setChecking] = useState(true);
+  const supabase = createClient();
 
   useEffect(() => {
-    // Check if user is logged in (has user_id in localStorage)
-    const userId = localStorage.getItem('user_id');
-    
-    if (userId) {
-      router.push('/discover');
-    } else {
-      setIsLoading(false);
-    }
-  }, [router]);
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) {
+        localStorage.setItem('user_id', data.session.user.id);
+        router.replace('/discover');
+      } else {
+        setChecking(false);
+      }
+    });
+  }, []);
 
-  if (isLoading) {
+  if (checking) {
     return (
       <div className="flex items-center justify-center min-h-[100dvh] bg-black">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto" />
       </div>
     );
   }
 
   return (
     <div className="relative min-h-[100dvh] w-full flex flex-col justify-center items-center overflow-hidden bg-black no-overscroll">
-      {/* Background Image with Overlay */}
+      {/* Background */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/backgrounds/newBg.jpeg"
-          alt="Noida skyscrapers view"
+          alt="Noida skyline"
           fill
           sizes="100vw"
           className="object-cover opacity-60 mix-blend-screen"
           priority
         />
-        {/* Dark gradients to ensure text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90 pointer-events-none" />
       </div>
 
-      {/* Main Content Container */}
       <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center justify-center text-center">
-        
-        {/* Logo Section */}
+        {/* Logo */}
         <div className="mb-0 md:mb-4 flex flex-col items-center animate-fade-in-up">
-          <div className="relative flex flex-col items-center">
-            <Image
-              src="/images/logo/Transparent.png"
-              alt="RealtyPals Logo"
-              width={350}
-              height={140}
-              className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105"
-              priority
-            />
-          </div>
+          <Image
+            src="/images/logo/Transparent.png"
+            alt="RealtyPals Logo"
+            width={350}
+            height={140}
+            className="object-contain drop-shadow-2xl opacity-90 transition-transform duration-700 hover:scale-105"
+            priority
+          />
         </div>
 
-        {/* Hero Text */}
-        <h2 
-          className="text-3xl md:text-5xl lg:text-[56px] leading-[1.2] md:leading-[1.15] text-white font-medium max-w-4xl tracking-tight drop-shadow-2xl animate-fade-in-up transform transition-all duration-700 hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" 
+        {/* Hero text */}
+        <h2
+          className="text-3xl md:text-5xl lg:text-[56px] leading-[1.2] md:leading-[1.15] text-white font-medium max-w-4xl tracking-tight drop-shadow-2xl animate-fade-in-up transform transition-all duration-700 hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
           style={{ animationDelay: '0.2s' }}
         >
           Intelligence layer for smarter property decisions in Noida
         </h2>
 
-        {/* Call to Action Box */}
-        <div 
-          className="mt-[60px] w-full flex justify-center animate-fade-in-up"
-          style={{ animationDelay: '0.4s' }}
-        >
-          <form 
-            onSubmit={(e) => { 
-              e.preventDefault(); 
-              // Create a seamless mock-login and push straight to discover
-              const phoneInput = e.currentTarget.elements.namedItem('phone') as HTMLInputElement;
-              const phone = phoneInput.value;
-              localStorage.setItem('user_id', `user_${phone}_${Date.now()}`);
-              router.push('/discover'); 
-            }}
-            className="flex items-center w-full max-w-[540px] bg-white p-1.5 md:p-2 rounded-full shadow-2xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] focus-within:shadow-[0_0_30px_rgba(255,255,255,0.3)] touch-target-min"
+        {/* CTA */}
+        <div className="mt-[60px] flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+          <button
+            onClick={() => router.push('/auth')}
+            className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-full text-base transition-all duration-200 shadow-2xl hover:shadow-blue-500/30 active:scale-95"
           >
-            {/* Country Code */}
-            <div className="flex items-center justify-center pl-5 md:pl-7 pr-3 md:pr-4 border-r border-gray-200 h-8 md:h-10 mt-0.5">
-              <span className="text-gray-600 font-medium text-sm md:text-base whitespace-nowrap">+91</span>
-            </div>
-            
-            {/* Input Field */}
-            <input 
-              name="phone"
-              type="tel" 
-              placeholder="Add your phone no"
-              required
-              title="Enter a valid phone number"
-              className="flex-1 min-w-0 bg-transparent px-4 md:px-5 text-gray-900 placeholder:text-gray-500 font-medium text-sm md:text-base focus:outline-none h-12 md:h-14 touch-target-min"
-              onChange={(e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); }}
-            />
-            
-            {/* Waitlist Button */}
-            <button 
-              type="submit"
-              className="bg-black hover:bg-[#1a1a1a] text-white px-7 md:px-10 h-12 md:h-14 rounded-full font-semibold transition-all duration-200 active:scale-95 text-sm md:text-base touch-target-min whitespace-nowrap shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
-            >
-              Start Discovery
-            </button>
-          </form>
+            Start Discovery
+          </button>
+          <button
+            onClick={() => router.push('/auth')}
+            className="px-10 py-4 bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/20 text-white font-semibold rounded-full text-base transition-all duration-200 active:scale-95"
+          >
+            Sign In
+          </button>
         </div>
 
+        {/* Features row */}
+        <div className="mt-16 flex flex-wrap justify-center gap-6 text-sm text-white/60 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+          {['AI-powered recommendations', 'Honest trade-off analysis', 'RERA verified data', 'Noida Sector 78 · 137 · 150'].map((f) => (
+            <span key={f} className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-blue-400" />
+              {f}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

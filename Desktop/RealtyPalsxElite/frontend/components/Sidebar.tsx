@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Map, Users } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatedText } from '@/components/ui/animated-shiny-text';
+import { createClient } from '@/lib/supabase';
 
 interface SidebarProps {
   activeView?: 'discovery' | 'saved' | 'compare' | 'value-estimator' | 'market-intelligence' | 'lead-snapshot';
@@ -28,9 +29,11 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
   };
   const activeView = routeToView[pathname ?? ''] ?? activeViewProp ?? 'discovery';
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     localStorage.removeItem('user_id');
-    window.location.href = '/';
+    router.push('/');
   };
 
 
