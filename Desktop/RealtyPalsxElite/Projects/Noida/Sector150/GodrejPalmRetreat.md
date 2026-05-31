@@ -1,6 +1,6 @@
 Godrej Palm Retreat
 2bhk 1.95cr+
-3bhk 1.86cr+
+3bhk 2.10cr+
 4bhk up to 4.95cr
 
 # 1. Project Information
@@ -37,7 +37,7 @@ Godrej Palm Retreat
     ],
     "verified_date": "2026-05-31",
     "status_note": "Phase 1 possession commenced Jun 2025. OC applied mid-Dec 2025, possession handed over from Mar 2026. Multiple towers completed and occupied as of May 2026. Status updated from Under Construction to Ready to Move.",
-    "unverified_fields": ["latitude", "longitude", "launchDate", "numberOfUnits", "landArea"]
+    "unverified_fields": ["latitude", "longitude", "launchDate", "numberOfUnits", "landArea", "numberOfTowers — conflicting data (towerNames array has 16, Section 8 shows 5, 30 is unverified)"]
   }
 }
 ```
@@ -99,7 +99,7 @@ Pages 1, 6.
 {
   "landArea": 11.43,
   "landAreaUnit": "Acres",
-  "numberOfTowers": 30,
+  "numberOfTowers": null,
   "towerNames": [
     "A1", "A2", "A3", "A4", "A5",
     "B1", "B2", "B3", "B4", "B5",

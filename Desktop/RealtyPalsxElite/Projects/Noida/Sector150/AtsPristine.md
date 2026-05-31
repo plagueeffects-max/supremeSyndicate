@@ -1,7 +1,6 @@
 ATS Pristine
 3bhk 2.10-3.57cr
 4bhk 4.65-5.12cr
-5bhk 5.6cr
 # 1. Project Information
 
 ```json
@@ -30,7 +29,7 @@ ATS Pristine
       "https://houssed.com/noida/ats-group/ats-pristine-3867"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["latitude", "longitude", "launchDate", "numberOfFloors", "salesNumber", "email"]
+    "unverified_fields": ["latitude", "longitude", "launchDate", "numberOfFloors", "salesNumber", "email", "numberOfTowers", "numberOfUnits"]
   }
 }
 ```
@@ -88,8 +87,8 @@ Page 3, Page 10.
 {
   "landArea": 18,
   "landAreaUnit": "Acres",
-  "numberOfTowers": 17,
-  "numberOfUnits": 1066,
+  "numberOfTowers": 9,
+  "numberOfUnits": 728,
   "numberOfFloors": 24,
   "apartmentsPerFloor": null,
   "apartmentsPerAcre": null,

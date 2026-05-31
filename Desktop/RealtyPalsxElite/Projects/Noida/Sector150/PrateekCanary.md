@@ -1,7 +1,7 @@
 Prateek Canary
 3bhk 2.89-5.62cr
 4bhk 7.38cr
-6bhk 9.46cr
+penthouse 9.46cr
 # Project Information
 
 
@@ -31,7 +31,8 @@ Prateek Canary
       "https://www.homesnut.com/article/prateek-canary-sector-150-noida-review-price-map-rera"
     ],
     "verified_date": "2026-05-31",
-    "unverified_fields": ["latitude", "longitude", "launchDate", "phone", "email", "credaiMember"]
+    "unverified_fields": ["latitude", "longitude", "launchDate", "phone", "email", "credaiMember"],
+    "pricing_notes": "4BHK at 7.38Cr confirmed reasonable — unit is a large 3355 sqft luxury duplex (5 bathrooms, private deck) with per-sqft ~22,000; market search (May 2026) shows Prateek Canary top range ~7.32Cr, broadly consistent. Penthouse (Duplex Penthouse, 6100 sqft) at 9.46Cr. Header label changed from '6bhk' to 'penthouse' as no 6BHK configuration exists — unit type is Duplex Penthouse."
   }
 }
 ```
