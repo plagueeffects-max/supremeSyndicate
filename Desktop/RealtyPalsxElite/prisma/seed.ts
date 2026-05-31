@@ -1,5 +1,5 @@
 // prisma/seed.ts
-import { PrismaClient, ProjectStatus, AmenityCategory, ConnectivityType, DataSource } from '@prisma/client'
+import { PrismaClient, ProjectStatus, AmenityCategory, ConnectivityType, DataSource, ImageType } from '@prisma/client'
 import { BUILDERS, PROJECTS } from './data/seed-data'
 
 const prisma = new PrismaClient()
@@ -31,7 +31,7 @@ async function main() {
       continue
     }
 
-    const { unit_types, amenities, connectivity, builder_slug, ...projectData } = p
+    const { unit_types, amenities, connectivity, project_images, builder_slug, ...projectData } = p
 
     // Upsert project
     const project = await prisma.project.upsert({
@@ -44,6 +44,7 @@ async function main() {
     await prisma.unitType.deleteMany({ where: { project_id: project.id } })
     await prisma.amenity.deleteMany({ where: { project_id: project.id } })
     await prisma.connectivity.deleteMany({ where: { project_id: project.id } })
+    await prisma.projectImage.deleteMany({ where: { project_id: project.id } })
 
     // Insert unit types
     if (unit_types.length > 0) {
@@ -75,7 +76,18 @@ async function main() {
       })
     }
 
-    console.log(`  ✓ ${project.name} (${unit_types.length} units, ${amenities.length} amenities, ${connectivity.length} connectivity)`)
+    // Insert project images
+    if (project_images && project_images.length > 0) {
+      await prisma.projectImage.createMany({
+        data: project_images.map(img => ({
+          ...img,
+          project_id: project.id,
+          type: img.type as ImageType,
+        })),
+      })
+    }
+
+    console.log(`  ✓ ${project.name} (${unit_types.length} units, ${amenities.length} amenities, ${connectivity.length} connectivity, ${project_images?.length ?? 0} images)`)
   }
 
   console.log('\n✅ Seed complete.')

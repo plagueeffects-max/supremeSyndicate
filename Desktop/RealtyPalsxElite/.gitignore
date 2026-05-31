@@ -7,12 +7,12 @@ node_modules/
 .pnp.js
 
 # Build
-/.next/
+.next/
 /out/
 /dist/
 /build/
 
-# Environment
+# Environment — never commit secrets
 .env
 .env.local
 .env.development.local
@@ -22,9 +22,13 @@ node_modules/
 # Prisma
 prisma/*.db
 prisma/*.db-journal
+ruvector.db
 
 # Testing
 /coverage/
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
 
 # Misc
 .DS_Store

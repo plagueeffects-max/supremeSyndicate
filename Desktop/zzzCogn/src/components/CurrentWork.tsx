@@ -46,12 +46,12 @@ export default function CurrentWork() {
             </div>
             <a
               className="text-link"
-              href="https://idmgmt.net"
+              href="https://md.myidmgmt.com/"
               data-event="outbound_idmgmt"
               rel="noopener"
               onClick={() => track('outbound_idmgmt')}
             >
-              Read more about IDmgmt <span aria-hidden="true">→</span> idmgmt.net
+              Read more about IDmgmt <span aria-hidden="true">→</span> md.myidmgmt.com
             </a>
           </motion.article>
 

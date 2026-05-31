@@ -1,2 +1,0 @@
-/** Expo-out cubic-bezier — premium feel for all transitions */
-export const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
