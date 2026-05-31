@@ -5,6 +5,7 @@ export interface ProjectCard {
   tagline?: string | null
   builder: { name: string; slug: string }
   rera_number?: string | null
+  rera_url?: string | null
   sector: string
   city: string
   address?: string | null

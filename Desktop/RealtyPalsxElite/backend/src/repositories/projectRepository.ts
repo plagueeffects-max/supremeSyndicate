@@ -135,6 +135,7 @@ export function toProjectCard(p: any): ProjectCard {
     tagline: p.tagline,
     builder: p.builder,
     rera_number: p.rera_number,
+    rera_url: p.rera_url ?? null,
     sector: p.sector,
     city: p.city,
     address: p.address,
