@@ -6,6 +6,8 @@ export interface ProjectCard {
   builder: { name: string; slug: string }
   rera_number?: string | null
   rera_url?: string | null
+  lat?: number | null
+  lng?: number | null
   sector: string
   city: string
   address?: string | null

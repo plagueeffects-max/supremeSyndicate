@@ -19,6 +19,7 @@ import remarkGfm from 'remark-gfm';
 import Header from '@/components/Header';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import ComparisonTable from '@/components/ComparisonTable';
+import SectorMap from '@/components/SectorMap';
 import {
   MessageSquare, User, RotateCcw, AlertTriangle, Send, Mic, ExternalLink, Activity, Info, TrendingUp,
   Share2, Settings, Plus, Search, GitCompare, HelpCircle, ChevronDown
@@ -52,6 +53,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
+  const [showMap, setShowMap] = useState(false);
   const [resolvedFields, setResolvedFields] = useState<{
     property_type?: boolean;
     bhk?: boolean;
@@ -750,17 +752,36 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             message.intent?.is_general_query === true;
           if (!message.properties || message.properties.length === 0 || isGeneralOrComparison) return null;
           return (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full overflow-hidden">
-              {message.properties.map((property, pi) => (
-                <ProjectCard
-                  key={property.id}
-                  project={property}
-                  userId={userId}
-                  index={pi}
-                  onDetailOpen={setDetailProject}
-                />
-              ))}
-            </div>
+            <>
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full overflow-hidden">
+                {message.properties.map((property, pi) => (
+                  <ProjectCard
+                    key={property.id}
+                    project={property}
+                    userId={userId}
+                    index={pi}
+                    onDetailOpen={setDetailProject}
+                  />
+                ))}
+              </div>
+              {/* ── Sector map ── */}
+              {message.properties.length >= 2 && (
+                <div className="mt-3 w-full">
+                  <button
+                    onClick={() => setShowMap((v) => !v)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-100 rounded-xl text-[12px] font-semibold text-gray-600 hover:text-blue-700 transition-all mb-2"
+                  >
+                    <span>🗺️</span>
+                    {showMap ? 'Hide map' : `View on map — ${message.properties.length} properties`}
+                  </button>
+                  {showMap && (
+                    <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                      <SectorMap properties={message.properties} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           );
         })()}
 
