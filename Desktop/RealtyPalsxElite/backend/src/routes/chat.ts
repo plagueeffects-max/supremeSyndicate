@@ -255,9 +255,15 @@ router.post('/', async (req: Request, res: Response) => {
       })
     }
 
+    // Only show cards when the user is starting/refining a search (new params extracted).
+    // Follow-up questions (floor plans, builder info, comparisons) get the AI answer only.
+    const SEARCH_PARAM_KEYS = ['bhk', 'budget', 'sector', 'city', 'property_type', 'purpose'] as const
+    const hasNewSearchParams = SEARCH_PARAM_KEYS.some((k) => k in updates)
+    const isFirstAdvisorTurn = historyForAI.length === 0
+
     await respond(advisorMessage, {
-      showRecommendations: true,
-      projects,
+      showRecommendations: hasNewSearchParams || isFirstAdvisorTurn,
+      projects: (hasNewSearchParams || isFirstAdvisorTurn) ? projects : undefined,
       chatPhase: 'ADVISOR',
     })
     return

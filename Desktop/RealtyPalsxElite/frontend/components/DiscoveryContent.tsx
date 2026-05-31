@@ -20,7 +20,7 @@ import Header from '@/components/Header';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import {
   MessageSquare, User, RotateCcw, AlertTriangle, Send, Mic, ExternalLink, Activity, Info, TrendingUp,
-  Share2, Settings, Plus, Search, GitCompare, HelpCircle
+  Share2, Settings, Plus, Search, GitCompare, HelpCircle, ChevronDown
 } from 'lucide-react';
 
 const SUGGESTION_CHIPS = [
@@ -49,6 +49,8 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
+  const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
+  const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [resolvedFields, setResolvedFields] = useState<{
     property_type?: boolean;
     bhk?: boolean;
@@ -414,6 +416,9 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
       });
 
       setShowRecommendations(data.showRecommendations && !!data.projects);
+      if (data.showRecommendations && data.projects?.length) {
+        setLastShortlist(data.projects);
+      }
     } catch (error: any) {
       console.error('Error in chat:', error);
       const errorMessage: ChatMessage = {
@@ -551,6 +556,9 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
       setChatHistory((prev) => [...prev, aiMessage]);
 
       setShowRecommendations(data.showRecommendations && !!data.projects);
+      if (data.showRecommendations && data.projects?.length) {
+        setLastShortlist(data.projects);
+      }
     } catch (error: any) {
       console.error('Error in quick reply:', error);
       setResolvedFields(prev => { const next = { ...prev }; delete next[field]; return next; });
@@ -726,7 +734,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             message.intent?.is_general_query === true;
           if (!message.properties || message.properties.length === 0 || isGeneralOrComparison) return null;
           return (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl overflow-hidden">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full overflow-hidden">
               {message.properties.map((property, pi) => (
                 <ProjectCard
                   key={property.id}
@@ -739,6 +747,40 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             </div>
           );
         })()}
+
+        {/* ── Collapsible shortlist for ADVISOR follow-up messages ── */}
+        {message.type === 'ai' && chatPhase === 'ADVISOR' && !message.properties?.length && lastShortlist.length > 0 && index === chatHistory.length - 1 && (
+          <div className="mt-3 ml-14 w-full">
+            <button
+              onClick={() => setExpandedShortlists((prev) => {
+                const next = new Set(prev);
+                if (next.has(message.id)) next.delete(message.id);
+                else next.add(message.id);
+                return next;
+              })}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl text-[12px] font-semibold text-blue-700 transition-all"
+            >
+              <span>View {lastShortlist.length} shortlisted properties</span>
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-200 ${expandedShortlists.has(message.id) ? 'rotate-180' : ''}`}
+              />
+            </button>
+            {expandedShortlists.has(message.id) && (
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {lastShortlist.map((p, pi) => (
+                  <ProjectCard
+                    key={p.id}
+                    project={p}
+                    userId={userId}
+                    index={pi}
+                    onDetailOpen={setDetailProject}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     );

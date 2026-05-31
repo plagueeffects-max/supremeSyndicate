@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Image from 'next/image'
 import {
   ClockCountdown, CheckCircle, SealCheck,
@@ -50,6 +50,13 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
       .map((i) => i.url),
   ].filter(Boolean) as string[]
   const hasMultiple = cardImages.length > 1
+
+  // Auto-advance carousel for multi-image cards
+  useEffect(() => {
+    if (!hasMultiple) return
+    const timer = setInterval(() => setImgIdx((i) => (i + 1) % cardImages.length), 3500)
+    return () => clearInterval(timer)
+  }, [hasMultiple, cardImages.length])
 
   const prevImg = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
