@@ -68,6 +68,18 @@ function buildWhatsAppUrl(project: {
   return `https://wa.me/${number}?text=${encodeURIComponent(lines.join('\n'))}`
 }
 
+// Compute lowest price-per-sqft across unit types (displayed as ₹8.5K/sqft)
+function getPricePerSqft(project: ProjectCardType): string | null {
+  const candidates = project.unit_types.filter(
+    (u) => u.price_min_cr && u.super_area_sqft && u.super_area_sqft > 0,
+  )
+  if (candidates.length === 0) return null
+  const min = Math.min(
+    ...candidates.map((u) => Math.round((u.price_min_cr! * 1e7) / u.super_area_sqft!)),
+  )
+  return `₹${(min / 1000).toFixed(1)}K/sqft`
+}
+
 export default function ProjectCard({ project, userId, index = 0, onDetailOpen }: Props) {
   const [imgIdx, setImgIdx] = useState(0)
   const [saved, setSaved] = useState(false)
@@ -79,6 +91,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
   const StatusIcon = isRTM ? CheckCircle : ClockCountdown
 
   const uniqueBhk = [...new Set(project.unit_types.map((u) => `${u.bhk}BHK`))]
+  const pricePerSqft = getPricePerSqft(project)
 
   // Build image list: hero first, then other exterior/hero images
   const cardImages = [
@@ -144,10 +157,10 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
   return (
     <div
       onClick={() => onDetailOpen?.(project)}
-      className="group relative w-full rounded-2xl overflow-hidden bg-white border border-gray-100/80 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      className="group relative w-full rounded-2xl overflow-hidden bg-white dark:bg-gray-900 border border-gray-100/80 dark:border-gray-700 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
     >
       {/* ── Hero image carousel ── */}
-      <div className="relative h-[220px] overflow-hidden bg-gray-100">
+      <div className="relative h-[220px] overflow-hidden bg-gray-100 dark:bg-gray-800">
         {cardImages.length > 0 ? (
           <>
             {cardImages.map((src, i) => (
@@ -166,7 +179,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
             ))}
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
             <Buildings size={40} weight="duotone" className="text-blue-200" />
           </div>
         )}
@@ -201,8 +214,15 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
           </>
         )}
 
+        {/* Rank badge — top pick only */}
+        {index === 0 && (
+          <div className="absolute top-3 left-3 z-20 flex items-center gap-1 text-[10px] font-black px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-orange-400 text-white shadow-sm shadow-amber-500/30">
+            ✦ Top Pick
+          </div>
+        )}
+
         {/* Status badge */}
-        <div className={`absolute top-3 left-3 flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg backdrop-blur-sm ${
+        <div className={`absolute ${index === 0 ? 'bottom-3 left-3' : 'top-3 left-3'} flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg backdrop-blur-sm ${
           isRTM ? 'bg-emerald-500/90 text-white' : isNew ? 'bg-blue-500/90 text-white' : 'bg-amber-500/90 text-white'
         }`}>
           <StatusIcon size={10} weight="fill" />
@@ -236,13 +256,13 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
       <div className="p-5">
         {/* Name */}
         <div className="mb-3">
-          <h3 className="text-[17px] font-bold text-gray-900 tracking-tight leading-snug">
+          <h3 className="text-[17px] font-bold text-gray-900 dark:text-white tracking-tight leading-snug">
             {project.name}
           </h3>
           {project.tagline && (
             <p className="text-[11px] text-blue-600 font-semibold mt-0.5 line-clamp-1">{project.tagline}</p>
           )}
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400">
+          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400 dark:text-gray-500">
             <MapPin size={10} weight="duotone" />
             <span>{project.builder.name} · {project.sector}, {project.city}</span>
           </div>
@@ -250,13 +270,30 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
 
         {/* Price */}
         <div className="mb-3">
-          <p className="text-[22px] font-black text-gray-900 tracking-tight leading-none">
-            {project.price_range_label}
-          </p>
-          <p className="text-[11px] text-gray-400 mt-0.5 font-medium">
-            {uniqueBhk.join(' · ')}
-            {project.possession_label && <span className="ml-1.5 text-gray-300">· {project.possession_label}</span>}
-          </p>
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-[22px] font-black text-gray-900 dark:text-white tracking-tight leading-none">
+              {project.price_range_label}
+            </p>
+            {pricePerSqft && (
+              <span className="text-[10.5px] font-semibold text-gray-400 dark:text-gray-500 mt-1.5 whitespace-nowrap bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2 py-0.5 rounded-full">
+                {pricePerSqft}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap mt-1.5">
+            <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{uniqueBhk.join(' · ')}</span>
+            {isRTM ? (
+              <span className="flex items-center gap-1 text-[10.5px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 px-2 py-0.5 rounded-full">
+                <CheckCircle size={9} weight="fill" />
+                Ready Now
+              </span>
+            ) : project.possession_label ? (
+              <span className="flex items-center gap-1 text-[10.5px] font-semibold text-amber-600 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 px-2 py-0.5 rounded-full">
+                <ClockCountdown size={9} weight="fill" />
+                {project.possession_label}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {/* Design credit */}
@@ -273,7 +310,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
             {project.top_amenities.slice(0, 5).map((a) => {
               const Icon = AMENITY_ICONS[a.category] ?? Buildings
               return (
-                <span key={a.name} className="flex items-center gap-1 text-[10.5px] text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-full font-medium">
+                <span key={a.name} className="flex items-center gap-1 text-[10.5px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2 py-1 rounded-full font-medium">
                   <Icon size={10} weight="duotone" />
                   {a.name}
                 </span>
@@ -284,11 +321,11 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
 
         {/* Connectivity */}
         {project.top_connectivity.length > 0 && (
-          <div className="flex flex-wrap gap-3 pb-3 border-b border-gray-50">
+          <div className="flex flex-wrap gap-3 pb-3 border-b border-gray-50 dark:border-gray-700">
             {project.top_connectivity.slice(0, 2).map((c) => {
               const Icon = CONN_ICONS[c.type] ?? Path
               return (
-                <span key={c.name} className="flex items-center gap-1 text-[10.5px] text-gray-400">
+                <span key={c.name} className="flex items-center gap-1 text-[10.5px] text-gray-400 dark:text-gray-500">
                   <Icon size={12} weight="duotone" />
                   {c.name}
                 </span>
@@ -325,7 +362,7 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
 
           <button
             onClick={handleAskAI}
-            className="flex items-center justify-center gap-1 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 text-gray-400 text-[11px] font-semibold px-3 py-2.5 rounded-xl transition-colors border border-gray-100 hover:border-blue-100"
+            className="flex items-center justify-center gap-1 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 text-[11px] font-semibold px-3 py-2.5 rounded-xl transition-colors border border-gray-100 dark:border-gray-700 hover:border-blue-100"
             title="Ask AI about this"
           >
             <Sparkle size={14} weight="duotone" />

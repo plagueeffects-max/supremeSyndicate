@@ -21,10 +21,10 @@ function Row({ label, left, right, highlight }: {
   highlight?: boolean
 }) {
   return (
-    <tr className={highlight ? 'bg-blue-50/40' : 'bg-white'}>
-      <td className="py-2.5 px-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-r border-gray-100 w-24 align-top">{label}</td>
-      <td className="py-2.5 px-4 text-[12px] text-gray-800 border-r border-gray-100">{left}</td>
-      <td className="py-2.5 px-4 text-[12px] text-gray-800">{right}</td>
+    <tr className={highlight ? 'bg-blue-50/40 dark:bg-blue-900/10' : 'bg-white dark:bg-gray-900'}>
+      <td className="py-2.5 px-3 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider border-r border-gray-100 dark:border-gray-700 w-24 align-top">{label}</td>
+      <td className="py-2.5 px-4 text-[12px] text-gray-800 dark:text-gray-100 border-r border-gray-100 dark:border-gray-700">{left}</td>
+      <td className="py-2.5 px-4 text-[12px] text-gray-800 dark:text-gray-100">{right}</td>
     </tr>
   )
 }
@@ -43,9 +43,9 @@ export default function ComparisonTable({ left, right }: Props) {
   }
 
   return (
-    <div className="mt-3 rounded-2xl border border-gray-200 overflow-hidden shadow-sm text-left">
+    <div className="mt-3 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm text-left">
       {/* Header row */}
-      <div className="grid grid-cols-[6rem_1fr_1fr] bg-gray-900 text-white">
+      <div className="grid grid-cols-[6rem_1fr_1fr] bg-gray-900 dark:bg-gray-800 text-white">
         <div className="py-3 px-3" />
         <div className="py-3 px-4 border-r border-white/10">
           <p className="text-[13px] font-bold leading-tight truncate">{left.name}</p>
@@ -58,11 +58,11 @@ export default function ComparisonTable({ left, right }: Props) {
       </div>
 
       <table className="w-full border-collapse">
-        <tbody className="divide-y divide-gray-100">
+        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
           <Row
             label="Price"
-            left={<span className="font-black text-gray-900 text-[13px]">{left.price_range_label}</span>}
-            right={<span className="font-black text-gray-900 text-[13px]">{right.price_range_label}</span>}
+            left={<span className="font-black text-gray-900 dark:text-white text-[13px]">{left.price_range_label}</span>}
+            right={<span className="font-black text-gray-900 dark:text-white text-[13px]">{right.price_range_label}</span>}
             highlight
           />
           <Row
@@ -85,27 +85,27 @@ export default function ComparisonTable({ left, right }: Props) {
             label="RERA"
             left={left.rera_number
               ? <span className="flex items-center gap-1 text-blue-600 font-medium"><SealCheck size={11} weight="fill" />{left.rera_number}</span>
-              : <span className="text-gray-300">—</span>}
+              : <span className="text-gray-300 dark:text-gray-600">—</span>}
             right={right.rera_number
               ? <span className="flex items-center gap-1 text-blue-600 font-medium"><SealCheck size={11} weight="fill" />{right.rera_number}</span>
-              : <span className="text-gray-300">—</span>}
+              : <span className="text-gray-300 dark:text-gray-600">—</span>}
           />
           <Row
             label="Amenities"
-            left={<span className="text-gray-600 leading-relaxed">{leftAmenities}</span>}
-            right={<span className="text-gray-600 leading-relaxed">{rightAmenities}</span>}
+            left={<span className="text-gray-600 dark:text-gray-300 leading-relaxed">{leftAmenities}</span>}
+            right={<span className="text-gray-600 dark:text-gray-300 leading-relaxed">{rightAmenities}</span>}
             highlight
           />
           <Row
             label="Nearest"
-            left={<span className="text-gray-600">{connStr(left)}</span>}
-            right={<span className="text-gray-600">{connStr(right)}</span>}
+            left={<span className="text-gray-600 dark:text-gray-300">{connStr(left)}</span>}
+            right={<span className="text-gray-600 dark:text-gray-300">{connStr(right)}</span>}
           />
           {(left.possession_label || right.possession_label) && (
             <Row
               label="Possession"
-              left={<span className="text-gray-700 font-medium">{left.possession_label ?? '—'}</span>}
-              right={<span className="text-gray-700 font-medium">{right.possession_label ?? '—'}</span>}
+              left={<span className="text-gray-700 dark:text-gray-200 font-medium">{left.possession_label ?? '—'}</span>}
+              right={<span className="text-gray-700 dark:text-gray-200 font-medium">{right.possession_label ?? '—'}</span>}
               highlight
             />
           )}
