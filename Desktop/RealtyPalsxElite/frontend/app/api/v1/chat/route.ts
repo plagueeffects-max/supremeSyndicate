@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { groq, GROQ_FAST, GROQ_SMART } from '@/lib/ai/groq'
+import { groq, GROQ_SMART } from '@/lib/ai/groq'
 import { cerebras, CEREBRAS_SMART } from '@/lib/ai/cerebras'
 import { tavilySearch, formatTavilyContext } from '@/lib/ai/tavily'
 import { buildSystemPrompt } from '@/lib/ai/prompts'
@@ -339,6 +339,9 @@ export async function POST(request: NextRequest) {
   const smartClient = getSmartClient()
   const smartModel = getSmartModel()
   const encoder = new TextEncoder()
+  const t0 = Date.now()
+
+  console.log(`[chat] ▶ user="${message.slice(0, 120)}" session=${sessionId?.slice(0, 8) ?? 'new'} uid=${userId.slice(0, 8)}`)
 
   const responseStream = new ReadableStream({
     async start(controller) {
@@ -355,9 +358,9 @@ export async function POST(request: NextRequest) {
       let firstCompletionForMemory: any = null
 
       try {
-        // ── Step 1: FAST model for tool detection (~0.5s vs 6s for 70b) ─────
+        // ── Step 1: Smart model for tool detection (8b was unreliable with 8 tools) ──
         const firstCompletion = await groq.chat.completions.create({
-          model: GROQ_FAST,
+          model: GROQ_SMART,
           messages: [{ role: 'system', content: systemPrompt }, ...chatMessages],
           tools: TOOLS,
           tool_choice: 'auto',
@@ -372,6 +375,11 @@ export async function POST(request: NextRequest) {
         const toolCall = rawToolCall && KNOWN_TOOL_NAMES.has(rawToolCall.function.name)
           ? rawToolCall
           : undefined
+
+        if (rawToolCall && !toolCall) {
+          console.warn(`[chat] ⚠ hallucinated tool ignored: "${rawToolCall.function.name}"`)
+        }
+        console.log(`[chat] 🔧 tool=${toolCall?.function.name ?? 'none'} args=${toolCall ? toolCall.function.arguments.slice(0, 200) : '-'}`)
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const secondMessages: any[] = [
@@ -394,6 +402,8 @@ export async function POST(request: NextRequest) {
             filters = coerceFilters(raw)
           } catch { /* ok */ }
 
+          console.log(`[chat] 🔍 search_properties filters:`, JSON.stringify(filters))
+
           // Save user message while searching (parallel)
           const [, searchResults] = await Promise.all([
             saveUserMsg,
@@ -401,6 +411,8 @@ export async function POST(request: NextRequest) {
           ])
           projects = searchResults
           chatPhase = 'ADVISOR'
+
+          console.log(`[chat] 📦 found ${projects.length} project(s): ${projects.map(p => p.slug).join(', ')}`)
 
           const toolResult =
             projects.length === 0
@@ -415,21 +427,21 @@ export async function POST(request: NextRequest) {
           let webQuery = ''
           try { webQuery = JSON.parse(toolCall.function.arguments).query as string } catch { /* ok */ }
 
-          // Cache web search results by query for 24 hours — same builder/area query asked many times
+          console.log(`[chat] 🌐 search_web query="${webQuery}"`)
+
           const webCacheKey = makeKey('websearch', webQuery.toLowerCase().slice(0, 120))
           let webContext = await getCached<string>(webCacheKey)
 
           if (!webContext) {
-            // Save user message while searching web (parallel)
             const [, webResult] = await Promise.all([
               saveUserMsg,
               tavilySearch(webQuery, 3),
             ])
             webContext = formatTavilyContext(webResult.answer, webResult.results) || ''
-            if (webContext) {
-              await setCached(webCacheKey, webContext, 60 * 60 * 24)
-            }
+            console.log(`[chat] 🌐 web result src=${webResult.source} results=${webResult.results.length} cached=false`)
+            if (webContext) await setCached(webCacheKey, webContext, 60 * 60 * 24)
           } else {
+            console.log(`[chat] 🌐 web result cached=true`)
             await saveUserMsg
           }
 
@@ -448,6 +460,8 @@ export async function POST(request: NextRequest) {
             origin = args.origin as string
             destination = args.destination as string
           } catch { /* ok */ }
+
+          console.log(`[chat] 🗺 commute origin="${origin}" → dest="${destination}"`)
 
           const commuteKey = makeKey('commute', origin.toLowerCase(), destination.toLowerCase())
           let commuteData = await getCached<object>(commuteKey)
@@ -479,6 +493,7 @@ export async function POST(request: NextRequest) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let args: any = { principal_cr: 1, annual_rate: 8.5, tenure_years: 20 }
           try { Object.assign(args, JSON.parse(toolCall.function.arguments)) } catch { /* ok */ }
+          console.log(`[chat] 🧮 calculate_emi principal=${args.principal_cr}Cr rate=${args.annual_rate}% tenure=${args.tenure_years}yr`)
           const r = calculateEmi(Number(args.principal_cr), Number(args.annual_rate), Number(args.tenure_years))
           const toolResult = [
             `Monthly EMI: ${formatInr(r.emi_monthly)}`,
@@ -578,7 +593,8 @@ export async function POST(request: NextRequest) {
         await persistAndDone()
 
       } catch (err) {
-        console.error('[chat] Error:', err)
+        const errMsg2 = err instanceof Error ? err.message : String(err)
+        console.error(`[chat] ❌ ERROR after ${Date.now() - t0}ms:`, errMsg2)
         const errMsg = "I'm having trouble right now. Please try again in a moment."
         await Promise.all([
           saveUserMsg.catch(() => {}),
@@ -604,11 +620,11 @@ export async function POST(request: NextRequest) {
         ]
 
         if (projects.length > 0) {
-          // Extract filters from the fast-model tool call for memory enrichment
+          // Extract filters — must go through coerceFilters to convert string numbers → Int/Float
           let filters: SearchFilters = {}
           try {
             const args = firstCompletionForMemory?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments
-            if (args) filters = JSON.parse(args) as SearchFilters
+            if (args) filters = coerceFilters(JSON.parse(args) as Record<string, unknown>)
           } catch { /* ok */ }
 
           const newViewedSlugs = projects.map((p) => p.slug)
@@ -616,21 +632,25 @@ export async function POST(request: NextRequest) {
           const mergedViewed = [...new Set([...existingViewed, ...newViewedSlugs])]
 
           const memoryUpdate: Record<string, unknown> = { viewed_slugs: mergedViewed }
-          if (filters.bhk) memoryUpdate.bhk_preference = filters.bhk
-          if (filters.budget_min_cr) memoryUpdate.budget_min_cr = filters.budget_min_cr
-          if (filters.budget_max_cr) memoryUpdate.budget_max_cr = filters.budget_max_cr
-          if (filters.sector) memoryUpdate.sector_preference = filters.sector
+          if (filters.bhk)            memoryUpdate.bhk_preference     = filters.bhk
+          if (filters.budget_min_cr)  memoryUpdate.budget_min_cr      = filters.budget_min_cr
+          if (filters.budget_max_cr)  memoryUpdate.budget_max_cr      = filters.budget_max_cr
+          if (filters.sector)         memoryUpdate.sector_preference   = filters.sector
+
+          console.log(`[chat] 💾 memory update: ${Object.keys(memoryUpdate).join(', ')} | viewed=${mergedViewed.length} slugs`)
 
           persistPromises.push(
             prisma.userMemory.upsert({
               where: { user_id: userId! },
               create: { user_id: userId!, ...memoryUpdate },
               update: memoryUpdate,
-            }).catch(() => {}),
+            }).catch((e) => console.error('[chat] ❌ memory upsert failed:', e)),
           )
         }
 
         await Promise.all(persistPromises)
+
+        console.log(`[chat] ✅ done in ${Date.now() - t0}ms | phase=${chatPhase} projects=${projects.length} chars=${finalText.length}`)
 
         send({
           type: 'done',
