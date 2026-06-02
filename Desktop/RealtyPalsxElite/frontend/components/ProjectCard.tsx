@@ -7,7 +7,7 @@ import {
   Subway, AirplaneTakeoff, Path,
   SoccerBall, Buildings, Leaf, Baby, Heart, Tree,
   MapPin, ArrowRight, Sparkle, BookmarkSimple,
-  CaretLeft, CaretRight,
+  CaretLeft, CaretRight, Phone,
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, AmenitySummary, ConnSummary } from '@/types/project'
 import { API_BASE } from '@/lib/env'
@@ -17,6 +17,7 @@ interface Props {
   userId: string | null
   index?: number
   onDetailOpen?: (project: ProjectCardType) => void
+  onCallback?: (project: ProjectCardType) => void
 }
 
 const AMENITY_ICONS: Record<AmenitySummary['category'], React.ElementType> = {
@@ -80,7 +81,7 @@ function getPricePerSqft(project: ProjectCardType): string | null {
   return `₹${(min / 1000).toFixed(1)}K/sqft`
 }
 
-export default function ProjectCard({ project, userId, index = 0, onDetailOpen }: Props) {
+export default function ProjectCard({ project, userId, index = 0, onDetailOpen, onCallback }: Props) {
   const [imgIdx, setImgIdx] = useState(0)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -343,6 +344,16 @@ export default function ProjectCard({ project, userId, index = 0, onDetailOpen }
             View Details
             <ArrowRight size={12} weight="bold" />
           </button>
+
+          {onCallback && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onCallback(project) }}
+              className="flex items-center justify-center gap-1 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 px-3 py-2.5 rounded-xl transition-colors"
+              title="Request callback"
+            >
+              <Phone size={14} weight="fill" />
+            </button>
+          )}
 
           {(() => {
             const waUrl = buildWhatsAppUrl(project)

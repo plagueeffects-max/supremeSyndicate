@@ -8,6 +8,17 @@ interface Props {
   right: ProjectCard
 }
 
+function getPricePerSqft(p: ProjectCard): { value: number; label: string } | null {
+  const candidates = p.unit_types.filter(
+    (u) => u.price_min_cr && u.super_area_sqft && u.super_area_sqft > 0,
+  )
+  if (!candidates.length) return null
+  const minVal = Math.min(
+    ...candidates.map((u) => Math.round((u.price_min_cr! * 1e7) / u.super_area_sqft!)),
+  )
+  return { value: minVal, label: `₹${(minVal / 1000).toFixed(1)}K/sqft` }
+}
+
 const statusLabel = (s: ProjectCard['status']) =>
   s === 'ready_to_move' ? 'Ready to Move' : s === 'new_launch' ? 'New Launch' : 'Under Construction'
 
@@ -32,6 +43,8 @@ function Row({ label, left, right, highlight }: {
 export default function ComparisonTable({ left, right }: Props) {
   const leftBhk = [...new Set(left.unit_types.map((u) => `${u.bhk}BHK`))].join(' · ')
   const rightBhk = [...new Set(right.unit_types.map((u) => `${u.bhk}BHK`))].join(' · ')
+  const leftSqft = getPricePerSqft(left)
+  const rightSqft = getPricePerSqft(right)
 
   const leftAmenities = left.top_amenities.slice(0, 3).map((a) => a.name).join(', ') || '—'
   const rightAmenities = right.top_amenities.slice(0, 3).map((a) => a.name).join(', ') || '—'
@@ -65,6 +78,17 @@ export default function ComparisonTable({ left, right }: Props) {
             right={<span className="font-black text-gray-900 dark:text-white text-[13px]">{right.price_range_label}</span>}
             highlight
           />
+          {(leftSqft || rightSqft) && (
+            <Row
+              label="₹/sqft"
+              left={leftSqft
+                ? <span className={`font-black text-[13px] ${leftSqft.value <= (rightSqft?.value ?? Infinity) ? 'text-emerald-600' : 'text-gray-700 dark:text-gray-200'}`}>{leftSqft.label}</span>
+                : <span className="text-gray-300 dark:text-gray-600">—</span>}
+              right={rightSqft
+                ? <span className={`font-black text-[13px] ${rightSqft.value <= (leftSqft?.value ?? Infinity) ? 'text-emerald-600' : 'text-gray-700 dark:text-gray-200'}`}>{rightSqft.label}</span>
+                : <span className="text-gray-300 dark:text-gray-600">—</span>}
+            />
+          )}
           <Row
             label="Config"
             left={leftBhk || '—'}

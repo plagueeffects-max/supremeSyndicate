@@ -287,3 +287,37 @@ input[type="range"]::-moz-range-thumb {
 .animate-card-slide-in {
   animation: card-slide-in 0.25s ease-out forwards;
 }
+
+/* ── Snap scroll card carousel (mobile) ── */
+.snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.snap-center { scroll-snap-align: center; }
+
+/* Hide scrollbar on card carousel */
+.snap-x::-webkit-scrollbar { display: none; }
+.snap-x { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Modal bottom sheet safe area ── */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+/* ── Global tap highlight removal ── */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* ── Smooth scrolling everywhere ── */
+html { scroll-behavior: smooth; }
+
+/* ── Prevent horizontal overflow at root ── */
+body { overflow-x: hidden; }
+
+/* ── Better focus styles for accessibility ── */
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: none;
+}
