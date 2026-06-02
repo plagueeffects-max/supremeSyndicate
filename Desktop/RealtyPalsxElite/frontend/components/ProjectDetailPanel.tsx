@@ -6,7 +6,8 @@ import Image from 'next/image'
 import {
   X, CheckCircle2, Clock, Shield, MapPin, Building2, Award,
   Ruler, BedDouble, Bath, ChevronRight, ExternalLink,
-  Sparkles, Star, Trophy, Layers, Phone, TrendingUp,
+  Sparkles, Star, Trophy, Layers, Phone, TrendingUp, Calendar,
+  FileText, Route, BarChart3, ZoomIn,
 } from 'lucide-react'
 import {
   Subway, AirplaneTakeoff, Path, Buildings, Heart, Tree,
@@ -14,7 +15,14 @@ import {
 } from '@phosphor-icons/react'
 import type { ProjectCard as ProjectCardType, ProjectDetail } from '@/types/project'
 import { API_BASE } from '@/lib/env'
+import { getAqi, type AqiResult } from '@/lib/waqi'
 import AmenityIcon from '@/components/AmenityIcon'
+import SiteVisitScheduler from '@/components/SiteVisitScheduler'
+import BuilderReputationCard from '@/components/BuilderReputationCard'
+import CommuteCalculator from '@/components/CommuteCalculator'
+import MarketComparison from '@/components/MarketComparison'
+import DocumentQA from '@/components/DocumentQA'
+import FloorPlanViewer from '@/components/FloorPlanViewer'
 
 interface Props {
   project: ProjectCardType | null
@@ -66,14 +74,14 @@ function buildWhatsAppUrl(project: {
     : 'Under Construction'
 
   const lines = [
-    `Hi! I'm interested in *${project.name}* by ${project.builder.name} in ${project.sector}, Noida.`,
+    `Hi! I came across *${project.name}* on RealtyPal and I'm interested.`,
     ``,
-    `Configuration: ${bhkList}`,
-    `Price: ${project.price_range_label}`,
-    `Status: ${statusLabel}`,
-    ...(project.rera_number ? [`RERA: ${project.rera_number}`] : []),
+    `📍 ${project.sector}, Noida — ${project.builder.name}`,
+    `🏠 ${bhkList} · ${project.price_range_label}`,
+    `📋 ${statusLabel}`,
+    ...(project.rera_number ? [`✅ RERA: ${project.rera_number}`] : []),
     ``,
-    `Could you help me with more details and a site visit?`,
+    `Could you share more details and help me book a site visit?`,
   ]
 
   return `https://wa.me/${number}?text=${encodeURIComponent(lines.join('\n'))}`
@@ -109,7 +117,7 @@ const SECTOR_PRICE_HISTORY: Record<string, {
   },
 }
 
-const SECTION_TABS = ['Overview', 'Units', 'Amenities', 'Builder'] as const
+const SECTION_TABS = ['Overview', 'Units', 'Amenities', 'Builder', 'Commute', 'Docs'] as const
 type Tab = typeof SECTION_TABS[number]
 
 export default function ProjectDetailPanel({ project, onClose }: Props) {
@@ -117,17 +125,26 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('Overview')
   const [imgIdx, setImgIdx] = useState(0)
+  const [showVisitScheduler, setShowVisitScheduler] = useState(false)
+  const [showFloorPlan, setShowFloorPlan] = useState<{ plans: Array<{ id: string; url: string; caption?: string | null }> } | null>(null)
+  const [aqi, setAqi] = useState<AqiResult | null>(null)
 
   useEffect(() => {
     if (!project) { setDetail(null); return }
     setLoading(true)
     setActiveTab('Overview')
     setImgIdx(0)
+    setAqi(null)
     fetch(`${API_BASE}/projects/${project.slug}`)
       .then((r) => r.json())
       .then((data) => setDetail(data.project ?? null))
       .catch(() => setDetail(null))
       .finally(() => setLoading(false))
+  }, [project?.slug])
+
+  useEffect(() => {
+    if (!project) return
+    getAqi(project.lat, project.lng, 'noida').then(setAqi).catch(() => {})
   }, [project?.slug])
 
   const isOpen = !!project
@@ -142,6 +159,7 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
   const isNew = d?.status === 'new_launch'
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -197,7 +215,7 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                 </div>
 
                 {d?.rera_number && (() => {
-                  const reraUrl = d?.rera_url ?? null
+                  const reraUrl = d?.rera_url ?? `https://www.up-rera.in/index_ui.aspx#sec/SearchProject?projectname=&rerano=${d.rera_number}`
                   const content = (
                     <>
                       <Shield size={10} />
@@ -385,6 +403,44 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                       </div>
                     )
                   })()}
+
+                  {/* Air Quality */}
+                  {aqi && (
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-7 h-7 bg-sky-50 dark:bg-sky-900/30 rounded-lg flex items-center justify-center">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-sky-500"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+                        </div>
+                        <p className="text-[12px] font-bold text-gray-700 dark:text-gray-200">Air Quality Index</p>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-auto">{aqi.station}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className={`text-[28px] font-black ${aqi.color}`}>{aqi.aqi}</p>
+                        <div>
+                          <p className={`text-[13px] font-bold ${aqi.color}`}>{aqi.label}</p>
+                          {aqi.dominantPollutant && (
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Main: {aqi.dominantPollutant.toUpperCase()}</p>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-1">0–50 Good · 51–100 Moderate · 101–150 Sensitive · 151+ Unhealthy</p>
+                    </div>
+                  )}
+
+                  {/* Quick commute teaser */}
+                  <div
+                    onClick={() => setActiveTab('Commute')}
+                    className="flex items-center justify-between bg-blue-50 border border-blue-100 rounded-xl p-3.5 cursor-pointer hover:bg-blue-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Route size={16} className="text-blue-500" />
+                      <div>
+                        <p className="text-xs font-semibold text-gray-800">Commute Calculator</p>
+                        <p className="text-[10px] text-gray-400">How long from here to your office?</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className="text-blue-400" />
+                  </div>
                 </div>
               )}
 
@@ -423,12 +479,34 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                         )}
                       </div>
 
-                      {/* Floor plan placeholder */}
-                      <div className="mx-5 mb-5 rounded-2xl bg-gradient-to-br from-slate-50 via-blue-50/20 to-indigo-50/30 border border-dashed border-blue-100 h-44 flex flex-col items-center justify-center gap-2">
-                        <Layers size={24} className="text-gray-300" />
-                        <p className="text-[11px] text-gray-400 font-medium">Floor Plan</p>
-                        <p className="text-[10px] text-gray-300">Image coming soon</p>
-                      </div>
+                      {/* Floor plan */}
+                      {(() => {
+                        const floorImages = detail?.images?.filter((img) => img.type === 'floor_plan') ?? []
+                        if (floorImages.length === 0) {
+                          return (
+                            <div className="mx-5 mb-5 rounded-2xl bg-gradient-to-br from-slate-50 via-blue-50/20 to-indigo-50/30 border border-dashed border-blue-100 h-44 flex flex-col items-center justify-center gap-2">
+                              <Layers size={24} className="text-gray-300" />
+                              <p className="text-[11px] text-gray-400 font-medium">Floor Plan</p>
+                              <p className="text-[10px] text-gray-300">Not available yet</p>
+                            </div>
+                          )
+                        }
+                        return (
+                          <div className="mx-5 mb-5 relative cursor-pointer rounded-2xl overflow-hidden group" onClick={() => setShowFloorPlan({ plans: floorImages })}>
+                            <Image src={floorImages[0].url} alt="Floor plan" width={400} height={250} unoptimized className="w-full h-44 object-cover" />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 bg-white/90 rounded-full px-4 py-2 flex items-center gap-2 text-xs font-semibold text-gray-700">
+                                <ZoomIn size={14} /> View Floor Plan
+                              </div>
+                            </div>
+                            {floorImages.length > 1 && (
+                              <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">
+                                +{floorImages.length} plans
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
                     </div>
                   ))}
                 </div>
@@ -550,25 +628,64 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
                         <ExternalLink size={14} className="text-blue-400 group-hover:text-blue-600 transition-colors" />
                       </a>
                     )}
+
+                    {/* Builder reputation engine */}
+                    <div>
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Online Reputation</p>
+                      <BuilderReputationCard builderName={b.name} />
+                    </div>
                   </div>
                 )
               })()}
             </div>
 
+              {!loading && activeTab === 'Commute' && (
+                <div className="p-5 space-y-6">
+                  {/* Commute calculator */}
+                  <CommuteCalculator
+                    projectAddress={`${d?.address ?? d?.name}, ${d?.sector}, ${d?.city}, India`}
+                  />
+                  {/* Market comparison */}
+                  {d?.sector && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <BarChart3 size={14} className="text-blue-500" />
+                        <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">Market Comparison</p>
+                      </div>
+                      <MarketComparison
+                        sector={d.sector}
+                        city={d.city}
+                        projectName={d.name}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!loading && activeTab === 'Docs' && (
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileText size={14} className="text-blue-500" />
+                    <p className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">Document Q&A</p>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-4 leading-relaxed">
+                    Upload a brochure, allotment letter, or RERA certificate — then ask questions about it. The AI reads the document and answers from it.
+                  </p>
+                  {project && (
+                    <DocumentQA projectId={project.id} projectSlug={project.slug} />
+                  )}
+                </div>
+              )}
+
             {/* Footer CTA */}
             <div className="flex-shrink-0 border-t border-gray-100 p-4 bg-white">
               <div className="flex gap-3">
                 <button
-                  onClick={() => {
-                    window.dispatchEvent(new CustomEvent('realtypals:ask-ai', {
-                      detail: { text: `I want to schedule a site visit for ${d?.name}` },
-                    }))
-                    onClose()
-                  }}
+                  onClick={() => setShowVisitScheduler(true)}
                   className="flex-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold py-4 rounded-2xl text-[14px] transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
                 >
-                  <MapTrifold size={16} weight="duotone" />
-                  Request Site Visit
+                  <Calendar size={16} />
+                  Book Site Visit
                 </button>
 
                 {(() => {
@@ -591,5 +708,29 @@ export default function ProjectDetailPanel({ project, onClose }: Props) {
         </>
       )}
     </AnimatePresence>
+
+    {/* Site visit scheduler modal */}
+    <AnimatePresence>
+      {showVisitScheduler && project && (
+        <SiteVisitScheduler
+          projectId={project.id}
+          projectSlug={project.slug}
+          projectName={project.name}
+          onClose={() => setShowVisitScheduler(false)}
+        />
+      )}
+    </AnimatePresence>
+
+    {/* Floor plan viewer */}
+    <AnimatePresence>
+      {showFloorPlan && (
+        <FloorPlanViewer
+          floorPlans={showFloorPlan.plans}
+          title={`${project?.name} — Floor Plans`}
+          onClose={() => setShowFloorPlan(null)}
+        />
+      )}
+    </AnimatePresence>
+  </>
   )
 }

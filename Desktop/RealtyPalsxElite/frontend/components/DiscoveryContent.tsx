@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChatMessage } from '@/types/property';
@@ -8,7 +8,7 @@ import type { ProjectCard as ProjectCardType } from '@/types/project';
 import ProjectCard from '@/components/ProjectCard';
 import ProjectDetailPanel from '@/components/ProjectDetailPanel';
 import PropertyDetailView from '@/components/PropertyDetailView';
-import AIThinkingIndicator from '@/components/AIThinkingIndicator';
+import ChatLoader from '@/components/ChatLoader';
 import ThemeToggle from '@/components/ThemeToggle';
 import VisualGuide from './VisualGuide';
 import Image from 'next/image';
@@ -20,10 +20,41 @@ import Header from '@/components/Header';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import ComparisonTable from '@/components/ComparisonTable';
 import SectorMap from '@/components/SectorMap';
+import CalculatorPanel from '@/components/CalculatorPanel';
 import {
   MessageSquare, User, RotateCcw, AlertTriangle, Send, Mic, ExternalLink, Activity, Info, TrendingUp,
-  Share2, Settings, Plus, Search, GitCompare, HelpCircle, ChevronDown
+  Share2, Settings, Plus, Search, GitCompare, HelpCircle, ChevronDown, Copy, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
+
+// ── Follow-up chip generator — contextual per phase ───────────────────────
+function getFollowUpChips(
+  phase: 'DISCOVERY' | 'ADVISOR',
+  shortlist: ProjectCardType[],
+  turnCount: number,
+): Array<{ emoji: string; label: string; msg: string }> {
+  if (phase === 'ADVISOR' && shortlist.length > 0) {
+    const p = shortlist[0]
+    const p2 = shortlist[1]
+    return [
+      { emoji: '📊', label: 'Calculate EMI',         msg: `What would be the monthly EMI for ${p.name}?` },
+      { emoji: '🧮', label: 'Calculator',              msg: '__open_calculator__' },
+      ...(p2 ? [{ emoji: '⚖️', label: 'Compare top 2', msg: `Compare ${p.name} vs ${p2.name} in detail` }] : []),
+      { emoji: '🏗️', label: `${p.builder.name} track record`, msg: `Tell me about ${p.builder.name}'s delivery history and reputation` },
+      { emoji: '📍', label: `${p.sector} overview`,  msg: `Give me a full area overview of ${p.sector} — metro, schools, appreciation` },
+      { emoji: '⚠️',  label: 'Risks & concerns',     msg: `What are the main risks or concerns I should know about these properties?` },
+      { emoji: '🔍', label: 'More options',           msg: `Show me more properties similar to these in Noida` },
+    ]
+  }
+  if (phase === 'DISCOVERY' && turnCount >= 2) {
+    return [
+      { emoji: '🏘️', label: 'Show properties',       msg: 'Show me available 3BHK properties in Noida Sector 150' },
+      { emoji: '📊', label: 'EMI calculator',         msg: 'How do I calculate EMI for a 1.5 Cr flat?' },
+      { emoji: '🏆', label: 'Best sectors',            msg: 'Which sectors in Noida have the best appreciation right now?' },
+      { emoji: '📋', label: 'RERA explained',          msg: 'What is RERA and how does it protect home buyers?' },
+    ]
+  }
+  return []
+}
 
 const SUGGESTION_CHIPS = [
   '3BHK in Sector 150 under 3 Cr — luxury',
@@ -54,6 +85,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
   const [resolvedFields, setResolvedFields] = useState<{
     property_type?: boolean;
     bhk?: boolean;
@@ -67,6 +99,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [isInputMinimized, setIsInputMinimized] = useState(false);
   const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const streamingMsgIdRef = useRef<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
 
@@ -97,7 +130,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = true;
-        recognition.lang = 'en-IN';
+        recognition.lang = 'hi-IN';  // Hindi India — handles Hindi + English
 
         recognition.onresult = (event: any) => {
           const transcript = Array.from(event.results)
@@ -123,19 +156,50 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     }
   }, []);
 
-  const toggleVoiceInput = () => {
-    if (!recognitionRef.current) {
-      setToast({ message: 'Voice input is not supported in this browser. Try Chrome or Edge.' });
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const toggleVoiceInput = async () => {
+    // Primary: browser SpeechRecognition (real-time, best UX)
+    if (recognitionRef.current) {
+      if (isListening) {
+        recognitionRef.current.stop();
+        setIsListening(false);
+      } else {
+        setChatInput('');
+        recognitionRef.current.start();
+        setIsListening(true);
+      }
       return;
     }
 
+    // Fallback: MediaRecorder → Whisper (when SpeechRecognition unavailable)
     if (isListening) {
-      recognitionRef.current.stop();
+      mediaRecorderRef.current?.stop();
       setIsListening(false);
-    } else {
-      setChatInput('');
-      recognitionRef.current.start();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const fd = new FormData();
+        fd.append('audio', blob, 'recording.webm');
+        try {
+          const res = await fetch('/api/v1/transcribe', { method: 'POST', body: fd });
+          const data = await res.json();
+          if (data.text) setChatInput(data.text);
+        } catch { /* silent */ }
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
       setIsListening(true);
+    } catch {
+      setToast({ message: 'Microphone access denied. Please allow microphone in browser settings.' });
     }
   };
 
@@ -275,13 +339,21 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
 
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/chat/session`, {
+        const sessionFromUrl = searchParams.get('session')
+        const sessionUrl = sessionFromUrl
+          ? `${API_BASE}/chat/session?id=${sessionFromUrl}`
+          : `${API_BASE}/chat/session`
+        const res = await fetch(sessionUrl, {
           headers: { 'X-User-Id': userId },
         });
         if (!res.ok) throw new Error('session fetch failed');
         const data = await res.json();
 
         setSessionId(data.session_id);
+        // Clean up ?session= from URL without triggering a navigation
+        if (searchParams.get('session')) {
+          router.replace('/discover', { scroll: false });
+        }
 
         if (data.messages && data.messages.length > 0) {
           const restored: ChatMessage[] = data.messages.map((m: { id: string; role: string; content: string; created_at: string }) => ({
@@ -332,272 +404,169 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     };
   }, [userId]);
 
-  const handleChatSubmit = async (e: React.FormEvent, textOverride?: string) => {
-    e.preventDefault();
-    const inputText = textOverride ?? chatInput;
-    if (!inputText.trim() || !userId || isSubmitting || submitLockRef.current) return;
-
+  const streamChat = useCallback(async (userText: string): Promise<void> => {
+    if (!userId || isSubmitting || submitLockRef.current) return;
     submitLockRef.current = true;
     setIsSubmitting(true);
-    const userMessage: ChatMessage = {
+
+    // Add user message
+    const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       type: 'user',
-      content: inputText,
+      content: userText,
       timestamp: new Date().toISOString(),
     };
-    setChatHistory((prev) => [...prev, userMessage]);
-    setChatTurnCount((count) => count + 1);
-    const currentInput = inputText;
+    setChatHistory(prev => [...prev, userMsg]);
+    setChatTurnCount(c => c + 1);
     setChatInput('');
+
+    // Add streaming placeholder AI message
+    const streamId = crypto.randomUUID();
+    streamingMsgIdRef.current = streamId;
+    setChatHistory(prev => [...prev, {
+      id: streamId,
+      type: 'ai',
+      content: '',
+      isSearching: false,
+      userQuery: userText,
+      timestamp: new Date().toISOString(),
+    }]);
 
     try {
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-Id': userId,
-        },
-        body: JSON.stringify({ message: currentInput, session_id: sessionId }),
+        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
+        body: JSON.stringify({ message: userText, session_id: sessionId }),
       });
 
-      if (!response.ok) {
-        let errorMessage = 'Failed to get chat response';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch (e) {
-          errorMessage = `${response.status}: ${response.statusText}`;
+      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let payload: any;
+          try { payload = JSON.parse(line.slice(6)); } catch { continue; }
+
+          if (payload.type === 'text') {
+            setChatHistory(prev => prev.map(m =>
+              m.id === streamId
+                ? { ...m, content: m.content + payload.delta, isSearching: false }
+                : m
+            ));
+          } else if (payload.type === 'searching') {
+            setChatHistory(prev => prev.map(m =>
+              m.id === streamId ? { ...m, isSearching: true, content: '' } : m
+            ));
+          } else if (payload.type === 'error') {
+            setChatHistory(prev => prev.map(m =>
+              m.id === streamId
+                ? { ...m, content: payload.message || 'Something went wrong. Please try again.', isSearching: false }
+                : m
+            ));
+          } else if (payload.type === 'done') {
+            const d = payload.data;
+            if (d.session_id) setSessionId(d.session_id);
+            if (d.chatPhase) setChatPhase(d.chatPhase);
+            const hasProjects = d.showRecommendations && d.projects?.length > 0;
+            setChatHistory(prev => prev.map(m =>
+              m.id === streamId
+                ? {
+                    ...m,
+                    isSearching: false,
+                    properties: hasProjects ? d.projects : undefined,
+                    showComparisonTable: (
+                      userText.toLowerCase().includes('compare') && lastShortlist.length >= 2
+                    ),
+                  }
+                : m
+            ));
+            if (hasProjects) setLastShortlist(d.projects);
+            setShowRecommendations(hasProjects);
+            setExpandedShortlists(new Set());
+          }
         }
-        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
-
-      if (typeof data.message === 'string' && data.message.trim().length === 0) {
-        if (data.next_expected_field !== undefined) {
-          setNextExpectedField(data.next_expected_field);
-        }
-        return;
-      }
-
-      const safeMessage =
-        typeof data.message === 'string' && data.message.trim().length > 0
-          ? data.message
-          : "I'll ask a few quick questions to narrow this down.";
-
-      if (data.chatPhase) setChatPhase(data.chatPhase);
-      if (data.session_id) setSessionId(data.session_id);
-      if (data.next_expected_field !== undefined) setNextExpectedField(data.next_expected_field);
-      if (data.resolvedFields) setResolvedFields(data.resolvedFields);
-
-      const aiMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        type: 'ai',
-        content: safeMessage,
-        properties: data.showRecommendations ? (data.projects || []) : undefined,
-        images: data.images || undefined,
-        highlights: data.highlights || undefined,
-        amenities: data.amenities || undefined,
-        propertyDetail: data.propertyDetail || undefined,
-        showSectorIntelligence: data.showSectorIntelligence || undefined,
-        showComparisonTable: (
-          typeof currentInput === 'string' &&
-          currentInput.toLowerCase().includes('compare') &&
-          lastShortlist.length >= 2
-        ),
-        timestamp: new Date().toISOString(),
-        intent: data.intent,
-      };
-
-      setChatHistory((prev) => {
-        const nextHistory = [...prev, aiMessage];
-        if (!hasShownLengthWarning && chatTurnCount + 1 >= 10) {
-          nextHistory.push({
+      // Length warning
+      setChatHistory(prev => {
+        if (!hasShownLengthWarning && chatTurnCount + 1 >= 12) {
+          setHasShownLengthWarning(true);
+          return [...prev, {
             id: crypto.randomUUID(),
             type: 'ai',
-            content: "We've covered a lot. Starting a fresh chat may give clearer recommendations.",
+            content: "We've covered a lot of ground. Starting a new chat may give you sharper recommendations.",
             timestamp: new Date().toISOString(),
-          });
-          setHasShownLengthWarning(true);
+          }];
         }
-        return nextHistory;
+        return prev;
       });
 
-      setShowRecommendations(data.showRecommendations && !!data.projects);
-      if (data.showRecommendations && data.projects?.length) {
-        setLastShortlist(data.projects);
-      }
-    } catch (error: any) {
-      console.error('Error in chat:', error);
-      const errorMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        type: 'ai',
-        content: `Sorry, I encountered an error. ${error.message ? `(${error.message})` : ''} Please try again.`,
-        timestamp: new Date().toISOString(),
-      };
-      setChatHistory((prev) => [...prev, errorMessage]);
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : '';
+      setChatHistory(prev => prev.map(m =>
+        m.id === streamId
+          ? { ...m, content: `Sorry, something went wrong. ${errorMsg ? `(${errorMsg})` : ''} Please try again.`, isSearching: false }
+          : m
+      ));
     } finally {
+      streamingMsgIdRef.current = null;
       setIsSubmitting(false);
       submitLockRef.current = false;
     }
-  };
+  }, [userId, isSubmitting, sessionId, chatTurnCount, hasShownLengthWarning, lastShortlist]);
 
-  // ── Regenerate: resend the last user message to get a fresh AI response ──
-  const handleRegenerate = async (aiMsgIndex: number) => {
-    if (!userId || isSubmitting || regeneratingIdx !== null) return;
+  const handleChatSubmit = useCallback(async (e: React.FormEvent, textOverride?: string) => {
+    e.preventDefault();
+    const text = (textOverride ?? chatInput).trim();
+    if (!text) return;
+    await streamChat(text);
+  }, [chatInput, streamChat]);
 
-    // Find the user message immediately before this AI message
+  // ── Regenerate: re-send the last user message ──
+  const handleRegenerate = useCallback(async (aiMsgIndex: number) => {
     let userMsg = '';
     for (let i = aiMsgIndex - 1; i >= 0; i--) {
-      if (chatHistory[i].type === 'user') {
-        userMsg = chatHistory[i].content;
-        break;
-      }
+      if (chatHistory[i].type === 'user') { userMsg = chatHistory[i].content; break; }
     }
-    if (!userMsg) return;
+    if (userMsg) await streamChat(userMsg);
+  }, [chatHistory, streamChat]);
 
-    setRegeneratingIdx(aiMsgIndex);
+  const handleQuickReply = useCallback(async (field: string, value: string) => {
+    let message = value;
+    if (field === 'bhk') message = `${parseInt(value)} BHK`;
+    await streamChat(message);
+  }, [streamChat]);
 
-    try {
-      const response = await fetch(`${API_BASE}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({ message: userMsg, session_id: sessionId }),
-      });
-
-      if (!response.ok) throw new Error('Failed to regenerate');
-
-      const data = await response.json();
-      const safeMessage = typeof data.message === 'string' && data.message.trim().length > 0
-        ? data.message
-        : 'Let me try that again...';
-
-      if (data.chatPhase) setChatPhase(data.chatPhase);
-
-      // Replace the AI message at this index
-      setChatHistory(prev => {
-        const updated = [...prev];
-        updated[aiMsgIndex] = {
-          id: crypto.randomUUID(),
-          type: 'ai',
-          content: safeMessage,
-          properties: data.showRecommendations ? (data.projects || []) : undefined,
-          images: data.images || undefined,
-          highlights: data.highlights || undefined,
-          amenities: data.amenities || undefined,
-          propertyDetail: data.propertyDetail || undefined,
-          showSectorIntelligence: data.showSectorIntelligence || undefined,
-          showComparisonTable: (
-            typeof userMsg === 'string' &&
-            userMsg.toLowerCase().includes('compare') &&
-            lastShortlist.length >= 2
-          ),
-          timestamp: new Date().toISOString(),
-          intent: data.intent,
-        };
-        return updated;
-      });
-    } catch (error: any) {
-      console.error('Regenerate error:', error);
-      setToast({ message: 'Failed to regenerate. Please try again.' });
-    } finally {
-      setRegeneratingIdx(null);
-    }
-  };
-
-  const handleQuickReply = async (field: 'property_type' | 'bhk' | 'budget' | 'purpose' | 'timeline' | 'status', value: string) => {
-    if (!userId || isSubmitting) return;
-
-    const previousNext = nextExpectedField;
-    setResolvedFields(prev => ({ ...prev, [field]: true }));
-    setNextExpectedField(undefined);
-    setIsSubmitting(true);
-
-    let message = '';
-    switch (field) {
-      case 'property_type': message = value; break;
-      case 'bhk': message = `${parseInt(value)} BHK`; break;
-      case 'budget': message = value; break;
-      case 'purpose': message = value; break;
-      case 'timeline': message = value; break;
-      case 'status': message = value; break;
-    }
-
-    const userMessage: ChatMessage = { id: crypto.randomUUID(), type: 'user', content: message, timestamp: new Date().toISOString() };
-    setChatHistory((prev) => [...prev, userMessage]);
-    setChatTurnCount((count) => count + 1);
-
-    try {
-      const response = await fetch(`${API_BASE}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
-        body: JSON.stringify({ message, session_id: sessionId }),
-      });
-
-      if (!response.ok) throw new Error('Failed to get chat response');
-
-      const data = await response.json();
-
-      if (typeof data.message === 'string' && data.message.trim().length === 0) {
-        if (data.next_expected_field !== undefined) setNextExpectedField(data.next_expected_field);
-        return;
-      }
-
-      const safeMessage =
-        typeof data.message === 'string' && data.message.trim().length > 0
-          ? data.message
-          : "I'll ask a few quick questions to narrow this down.";
-
-      if (data.chatPhase) setChatPhase(data.chatPhase);
-      if (data.session_id) setSessionId(data.session_id);
-      if (data.next_expected_field !== undefined) setNextExpectedField(data.next_expected_field);
-      if (data.resolvedFields) setResolvedFields(data.resolvedFields);
-
-      const aiMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        type: 'ai',
-        content: safeMessage,
-        properties: data.showRecommendations ? (data.projects || []) : undefined,
-        images: data.images || undefined,
-        highlights: data.highlights || undefined,
-        amenities: data.amenities || undefined,
-        propertyDetail: data.propertyDetail || undefined,
-        showSectorIntelligence: data.showSectorIntelligence || undefined,
-        showComparisonTable: (
-          typeof message === 'string' &&
-          message.toLowerCase().includes('compare') &&
-          lastShortlist.length >= 2
-        ),
-        timestamp: new Date().toISOString(),
-        intent: data.intent,
-      };
-      setChatHistory((prev) => [...prev, aiMessage]);
-
-      setShowRecommendations(data.showRecommendations && !!data.projects);
-      if (data.showRecommendations && data.projects?.length) {
-        setLastShortlist(data.projects);
-      }
-    } catch (error: any) {
-      console.error('Error in quick reply:', error);
-      setResolvedFields(prev => { const next = { ...prev }; delete next[field]; return next; });
-      setNextExpectedField(previousNext);
-      setChatHistory((prev) => [...prev, {
-        id: crypto.randomUUID(),
-        type: 'ai',
-        content: 'Sorry, I encountered an error processing your selection. Please try again.',
-        timestamp: new Date().toISOString(),
-      }]);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleCopy = useCallback((text: string) => {
+    navigator.clipboard.writeText(text)
+      .then(() => setToast({ message: 'Copied!' }))
+      .catch(() => {})
+  }, []);
 
   const hasUserReplied = chatHistory.some((m) => m.type === 'user');
 
+  // Index of the last chat message that has property cards — only that one shows full grid
+  const lastPropertiesIndex = useMemo(() =>
+    chatHistory.reduce((last, msg, i) =>
+      (msg.properties && msg.properties.length > 0 ? i : last), -1
+    ), [chatHistory]);
+
   // ── Submit a message programmatically (used by suggestion chips and advisor chips) ──
   const submitMessage = useCallback((text: string) => {
-    handleChatSubmit({ preventDefault: () => {} } as React.FormEvent, text);
-  }, [handleChatSubmit]);
+    streamChat(text);
+  }, [streamChat]);
 
   // ── Carousel navigation helper ──
   const setCarouselIndex = (msgIndex: number, imgIndex: number) => {
@@ -609,7 +578,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     const isUser = message.type === 'user';
 
     return (
-      <div key={message.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} animate-message-in`}>
+      <div key={message.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} animate-message-in group/msg`}>
         <div className={`flex w-full ${isUser ? 'items-end gap-4 flex-row-reverse' : 'items-start gap-4'}`}>
           {/* Avatar */}
           {isUser ? (
@@ -638,16 +607,57 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             {!isUser && <div className="absolute -top-10 -left-10 w-32 h-32 bg-blue-500/5 rounded-full blur-[40px] pointer-events-none"></div>}
 
             {!isUser ? (
-              <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-blue-700 dark:prose-headings:text-blue-400 prose-a:text-blue-500 prose-strong:text-blue-600 dark:prose-strong:text-blue-400 relative z-10 prose-table:w-full prose-table:text-sm prose-table:my-4 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-100 dark:prose-th:bg-blue-900/40 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-gray-800 dark:prose-th:text-blue-200 prose-th:border prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-gray-200 dark:prose-td:border-gray-700">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {message.content}
-                </ReactMarkdown>
+              <div className="relative z-10">
+                {!message.content ? (
+                  <ChatLoader
+                    userQuery={message.userQuery ?? ''}
+                    isSearching={!!message.isSearching}
+                  />
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.25 }}
+                    className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-headings:text-blue-700 dark:prose-headings:text-blue-400 prose-a:text-blue-500 prose-strong:text-blue-600 dark:prose-strong:text-blue-400 prose-table:w-full prose-table:text-sm prose-table:my-4 prose-table:border-collapse prose-table:rounded-xl prose-table:overflow-hidden prose-table:border prose-table:border-gray-200 dark:prose-table:border-gray-700 prose-th:bg-gray-100 dark:prose-th:bg-blue-900/40 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:text-gray-800 dark:prose-th:text-blue-200 prose-th:border prose-th:border-gray-200 dark:prose-th:border-gray-700 prose-td:px-3 prose-td:py-2 prose-td:border prose-td:border-gray-200 dark:prose-td:border-gray-700"
+                  >
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {message.content}
+                    </ReactMarkdown>
+                  </motion.div>
+                )}
               </div>
             ) : (
               <p className="whitespace-pre-wrap text-[16px] font-medium leading-relaxed relative z-10">{message.content}</p>
             )}
           </div>
         </div>
+
+        {/* ── Message actions — copy / thumbs (appear on hover) ── */}
+        {!isUser && message.content && (
+          <div className="ml-14 mt-1 flex items-center gap-0.5 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200">
+            <button
+              onClick={() => handleCopy(message.content)}
+              title="Copy response"
+              className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all text-[11px]"
+            >
+              <Copy size={12} />
+            </button>
+            <button
+              onClick={() => setToast({ message: 'Thanks for the feedback!' })}
+              title="Good response"
+              className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-all text-[11px]"
+            >
+              <ThumbsUp size={12} />
+            </button>
+            <button
+              onClick={() => setToast({ message: 'Thanks for the feedback!' })}
+              title="Bad response"
+              className="flex items-center gap-1 px-2 py-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all text-[11px]"
+            >
+              <ThumbsDown size={12} />
+            </button>
+          </div>
+        )}
 
         {/* ── Regenerate button (only on AI messages in ADVISOR mode) ── */}
         {!isUser && chatPhase === 'ADVISOR' && index > 0 && !message.properties?.length && (
@@ -751,9 +761,61 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             message.content.includes('| ---') ||
             message.intent?.is_general_query === true;
           if (!message.properties || message.properties.length === 0 || isGeneralOrComparison) return null;
+
+          const isLatest = index === lastPropertiesIndex;
+
+          if (!isLatest) {
+            // Collapsed chip for older messages — keep history readable
+            return (
+              <div className="mt-2">
+                <button
+                  onClick={() => setExpandedShortlists((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(message.id)) next.delete(message.id);
+                    else next.add(message.id);
+                    return next;
+                  })}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-100 rounded-xl text-[12px] font-semibold text-gray-500 hover:text-blue-700 transition-all"
+                >
+                  <span>🏠</span>
+                  {expandedShortlists.has(message.id) ? 'Hide' : `View`} {message.properties.length} properties from this search
+                  <ChevronDown size={13} className={`transition-transform duration-200 ${expandedShortlists.has(message.id) ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedShortlists.has(message.id) && (
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {message.properties.map((property, pi) => (
+                      <ProjectCard key={property.id} project={property} userId={userId} index={pi} onDetailOpen={setDetailProject} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           return (
             <>
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full overflow-hidden">
+              {/* Card reveal header */}
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4 flex items-center gap-3"
+              >
+                <div className="flex-1 flex items-center gap-2">
+                  <span className="text-[15px]">🏘️</span>
+                  <span className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
+                    {message.properties.length} {message.properties.length === 1 ? 'property' : 'properties'} found
+                  </span>
+                  {message.properties[0]?.sector && (
+                    <span className="text-[11px] text-gray-400">· {message.properties[0].sector}</span>
+                  )}
+                </div>
+                <span className="text-[10px] font-semibold text-gray-400 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-2.5 py-1 rounded-full">
+                  Ranked by fit
+                </span>
+              </motion.div>
+
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full overflow-hidden">
                 {message.properties.map((property, pi) => (
                   <ProjectCard
                     key={property.id}
@@ -819,44 +881,35 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
           </div>
         )}
 
-        {/* ── Smart follow-up chips — ADVISOR mode, last message only ── */}
-        {message.type === 'ai' && chatPhase === 'ADVISOR' && lastShortlist.length > 0 && index === chatHistory.length - 1 && !isSubmitting && (
-          <div className="mt-3 ml-14 flex flex-wrap gap-2">
-            <button
-              onClick={() => submitMessage(
-                `Calculate EMI for ${lastShortlist[0].name} at ${lastShortlist[0].price_min_cr ?? lastShortlist[0].price_range_label} with 20% down payment`
-              )}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-full text-[11px] font-semibold text-indigo-700 transition-all"
+        {/* ── Follow-up chips — Gemini-style horizontal scroll, both phases ── */}
+        {message.type === 'ai' && message.content && index === chatHistory.length - 1 && !isSubmitting && (() => {
+          const chips = getFollowUpChips(chatPhase, lastShortlist, chatTurnCount)
+          if (chips.length === 0) return null
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.15 }}
+              className="mt-3 ml-14"
             >
-              📊 Calculate EMI
-            </button>
-
-            {lastShortlist.length >= 2 ? (
-              <button
-                onClick={() => submitMessage(
-                  `Compare ${lastShortlist[0].name} vs ${lastShortlist[1].name} side by side`
-                )}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-full text-[11px] font-semibold text-blue-700 transition-all"
-              >
-                ⚖️ Compare {lastShortlist[0].name.split(' ').pop()} vs {lastShortlist[1].name.split(' ').pop()}
-              </button>
-            ) : (
-              <button
-                onClick={() => submitMessage('Compare these properties for me')}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-full text-[11px] font-semibold text-blue-700 transition-all"
-              >
-                ⚖️ Compare Properties
-              </button>
-            )}
-
-            <button
-              onClick={() => submitMessage(`I'd like to schedule a site visit for ${lastShortlist[0].name}`)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 hover:bg-green-100 border border-green-100 rounded-full text-[11px] font-semibold text-green-700 transition-all"
-            >
-              🏠 Request Site Visit
-            </button>
-          </div>
-        )}
+              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                {chips.map((chip) => (
+                  <button
+                    key={chip.label}
+                    onClick={() => {
+                      if (chip.msg === '__open_calculator__') { setShowCalculator(true); return }
+                      submitMessage(chip.msg)
+                    }}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full text-[12px] font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-300 transition-all shadow-sm whitespace-nowrap"
+                  >
+                    <span>{chip.emoji}</span>
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )
+        })()}
 
         {/* ── Inline comparison table ── */}
         {message.type === 'ai' && message.showComparisonTable && lastShortlist.length >= 2 && (
@@ -990,12 +1043,6 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
               <div className="max-w-4xl mx-auto space-y-6">
                 {chatHistory.map((message, index) => renderMessage(message, index))}
 
-                {isSubmitting && (
-                  <AIThinkingIndicator
-                    query={chatHistory.slice().reverse().find(m => m.type === 'user')?.content}
-                  />
-                )}
-
                 <div ref={chatEndRef} />
               </div>
 
@@ -1062,6 +1109,14 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
 
       {/* Project detail slide-over */}
       <ProjectDetailPanel project={detailProject} onClose={() => setDetailProject(null)} />
+
+      {/* Calculator panel */}
+      {showCalculator && (
+        <CalculatorPanel
+          onClose={() => setShowCalculator(false)}
+          defaultPriceCr={lastShortlist[0]?.price_min_cr ?? 1.5}
+        />
+      )}
 
     </div>
   );
