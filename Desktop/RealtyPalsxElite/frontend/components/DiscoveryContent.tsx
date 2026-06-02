@@ -26,31 +26,70 @@ import {
   Share2, Settings, Plus, Search, GitCompare, HelpCircle, ChevronDown, Copy, ThumbsUp, ThumbsDown,
 } from 'lucide-react';
 
+// ── Chip types ─────────────────────────────────────────────────────────────
+type ChipPickerMode = 'single' | 'multi'
+
+interface Chip {
+  emoji: string
+  label: string
+  // msg: direct message to send (no picker needed)
+  // picker: show property selector first
+  msg?: string
+  picker?: ChipPickerMode
+  pickerAction?: string // key used to build the final message
+  special?: string      // e.g. '__open_calculator__'
+}
+
+// ── Message builders for picker-backed chips ────────────────────────────────
+function buildPickerMessage(action: string, selected: ProjectCardType[]): string {
+  const names = selected.map(p => p.name)
+  switch (action) {
+    case 'emi':
+      return `What would be the monthly EMI for ${names[0]}? Show a breakdown at 8.5% for 20 years.`
+    case 'stamp_duty':
+      return `Calculate stamp duty and registration charges for ${names[0]}.`
+    case 'gst':
+      return `What is the GST applicable on ${names[0]}?`
+    case 'compare':
+      return names.length === 2
+        ? `Compare ${names[0]} vs ${names[1]} in detail — price, amenities, builder, location, trade-offs.`
+        : `Compare ${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} in detail.`
+    case 'builder':
+      return `Tell me about ${selected[0].builder.name}'s delivery history, reputation, and any complaints.`
+    case 'area':
+      return `Give me a full area overview of ${selected[0].sector} — metro access, schools, hospitals, appreciation potential.`
+    case 'risks':
+      return `What are the main risks and concerns I should know about ${names[0]}?`
+    default:
+      return names[0]
+  }
+}
+
 // ── Follow-up chip generator — contextual per phase ───────────────────────
 function getFollowUpChips(
   phase: 'DISCOVERY' | 'ADVISOR',
   shortlist: ProjectCardType[],
   turnCount: number,
-): Array<{ emoji: string; label: string; msg: string }> {
+): Chip[] {
   if (phase === 'ADVISOR' && shortlist.length > 0) {
-    const p = shortlist[0]
-    const p2 = shortlist[1]
     return [
-      { emoji: '📊', label: 'Calculate EMI',         msg: `What would be the monthly EMI for ${p.name}?` },
-      { emoji: '🧮', label: 'Calculator',              msg: '__open_calculator__' },
-      ...(p2 ? [{ emoji: '⚖️', label: 'Compare top 2', msg: `Compare ${p.name} vs ${p2.name} in detail` }] : []),
-      { emoji: '🏗️', label: `${p.builder.name} track record`, msg: `Tell me about ${p.builder.name}'s delivery history and reputation` },
-      { emoji: '📍', label: `${p.sector} overview`,  msg: `Give me a full area overview of ${p.sector} — metro, schools, appreciation` },
-      { emoji: '⚠️',  label: 'Risks & concerns',     msg: `What are the main risks or concerns I should know about these properties?` },
-      { emoji: '🔍', label: 'More options',           msg: `Show me more properties similar to these in Noida` },
+      { emoji: '📊', label: 'Calculate EMI',    picker: 'single', pickerAction: 'emi' },
+      { emoji: '🏷️', label: 'Stamp Duty',       picker: 'single', pickerAction: 'stamp_duty' },
+      { emoji: '💸', label: 'GST',               picker: 'single', pickerAction: 'gst' },
+      { emoji: '🧮', label: 'Calculator',        special: '__open_calculator__' },
+      ...(shortlist.length >= 2 ? [{ emoji: '⚖️', label: 'Compare', picker: 'multi' as ChipPickerMode, pickerAction: 'compare' }] : []),
+      { emoji: '🏗️', label: 'Builder track record', picker: 'single', pickerAction: 'builder' },
+      { emoji: '📍', label: 'Area overview',     picker: 'single', pickerAction: 'area' },
+      { emoji: '⚠️', label: 'Risks & concerns',  picker: 'single', pickerAction: 'risks' },
+      { emoji: '🔍', label: 'More options',      msg: 'Show me more properties similar to these in Noida' },
     ]
   }
   if (phase === 'DISCOVERY' && turnCount >= 2) {
     return [
-      { emoji: '🏘️', label: 'Show properties',       msg: 'Show me available 3BHK properties in Noida Sector 150' },
-      { emoji: '📊', label: 'EMI calculator',         msg: 'How do I calculate EMI for a 1.5 Cr flat?' },
-      { emoji: '🏆', label: 'Best sectors',            msg: 'Which sectors in Noida have the best appreciation right now?' },
-      { emoji: '📋', label: 'RERA explained',          msg: 'What is RERA and how does it protect home buyers?' },
+      { emoji: '🏘️', label: 'Show properties',  msg: 'Show me available 3BHK properties in Noida Sector 150' },
+      { emoji: '📊', label: 'EMI calculator',    msg: 'How do I calculate EMI for a 1.5 Cr flat?' },
+      { emoji: '🏆', label: 'Best sectors',       msg: 'Which sectors in Noida have the best appreciation right now?' },
+      { emoji: '📋', label: 'RERA explained',     msg: 'What is RERA and how does it protect home buyers?' },
     ]
   }
   return []
@@ -86,6 +125,12 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
+  const [chipPicker, setChipPicker] = useState<{
+    mode: ChipPickerMode
+    action: string
+    label: string
+    selected: string[] // project slugs
+  } | null>(null);
   const [resolvedFields, setResolvedFields] = useState<{
     property_type?: boolean;
     bhk?: boolean;
@@ -419,6 +464,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     if (!userId || isSubmitting || submitLockRef.current) return;
     submitLockRef.current = true;
     setIsSubmitting(true);
+    setChipPicker(null); // close any open picker
 
     // Add user message
     const userMsg: ChatMessage = {
@@ -892,7 +938,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
           </div>
         )}
 
-        {/* ── Follow-up chips — Gemini-style horizontal scroll, both phases ── */}
+        {/* ── Follow-up chips + property picker ── */}
         {message.type === 'ai' && message.content && index === chatHistory.length - 1 && !isSubmitting && (() => {
           const chips = getFollowUpChips(chatPhase, lastShortlist, chatTurnCount)
           if (chips.length === 0) return null
@@ -903,21 +949,123 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
               transition={{ duration: 0.3, delay: 0.15 }}
               className="mt-3 ml-14"
             >
+              {/* Chip row */}
               <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
-                {chips.map((chip) => (
-                  <button
-                    key={chip.label}
-                    onClick={() => {
-                      if (chip.msg === '__open_calculator__') { setShowCalculator(true); return }
-                      submitMessage(chip.msg)
-                    }}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full text-[12px] font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-300 transition-all shadow-sm whitespace-nowrap"
-                  >
-                    <span>{chip.emoji}</span>
-                    {chip.label}
-                  </button>
-                ))}
+                {chips.map((chip) => {
+                  const isActive = chipPicker?.label === chip.label
+                  return (
+                    <button
+                      key={chip.label}
+                      onClick={() => {
+                        if (chip.special === '__open_calculator__') { setShowCalculator(true); setChipPicker(null); return }
+                        if (chip.msg) { setChipPicker(null); submitMessage(chip.msg); return }
+                        if (chip.picker && chip.pickerAction) {
+                          if (isActive) { setChipPicker(null); return }
+                          setChipPicker({ mode: chip.picker, action: chip.pickerAction, label: chip.label, selected: [] })
+                        }
+                      }}
+                      className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-semibold transition-all shadow-sm whitespace-nowrap border ${
+                        isActive
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
+                      }`}
+                    >
+                      <span>{chip.emoji}</span>
+                      {chip.label}
+                      {chip.picker && <span className={`text-[10px] ml-0.5 ${isActive ? 'text-blue-200' : 'text-gray-400'}`}>▾</span>}
+                    </button>
+                  )
+                })}
               </div>
+
+              {/* Property picker — slides in below chips when active */}
+              <AnimatePresence>
+                {chipPicker && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                    animate={{ opacity: 1, height: 'auto', marginTop: 8 }}
+                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-2xl p-3 shadow-lg">
+                      <div className="flex items-center justify-between mb-2.5">
+                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                          {chipPicker.mode === 'multi' ? 'Select properties to compare' : `Which property?`}
+                        </span>
+                        <button onClick={() => setChipPicker(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none px-1">×</button>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        {lastShortlist.map((p) => {
+                          const isSelected = chipPicker.selected.includes(p.slug)
+                          return (
+                            <button
+                              key={p.slug}
+                              onClick={() => {
+                                if (chipPicker.mode === 'single') {
+                                  // Immediately fire and close
+                                  const msg = buildPickerMessage(chipPicker.action, [p])
+                                  setChipPicker(null)
+                                  submitMessage(msg)
+                                } else {
+                                  // Toggle selection
+                                  setChipPicker(prev => {
+                                    if (!prev) return prev
+                                    const next = isSelected
+                                      ? prev.selected.filter(s => s !== p.slug)
+                                      : prev.selected.length < 3 ? [...prev.selected, p.slug] : prev.selected
+                                    return { ...prev, selected: next }
+                                  })
+                                }
+                              }}
+                              className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all border ${
+                                isSelected
+                                  ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-200'
+                                  : 'border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                {chipPicker.mode === 'multi' && (
+                                  <div className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border ${
+                                    isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300 dark:border-gray-600'
+                                  }`}>
+                                    {isSelected && <span className="text-white text-[10px]">✓</span>}
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <div className="font-semibold text-[13px] truncate">{p.name}</div>
+                                  <div className="text-[11px] text-gray-400 dark:text-gray-500">{p.price_range_label} · {p.sector}</div>
+                                </div>
+                              </div>
+                              {chipPicker.mode === 'single' && (
+                                <span className="text-gray-300 dark:text-gray-600 text-xs ml-2 flex-shrink-0">→</span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      {/* Confirm button for multi-select */}
+                      {chipPicker.mode === 'multi' && chipPicker.selected.length >= 2 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2.5 pt-2.5 border-t border-gray-100 dark:border-gray-700">
+                          <button
+                            onClick={() => {
+                              const selected = lastShortlist.filter(p => chipPicker.selected.includes(p.slug))
+                              const msg = buildPickerMessage(chipPicker.action, selected)
+                              setChipPicker(null)
+                              submitMessage(msg)
+                            }}
+                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[13px] font-semibold rounded-xl transition-all"
+                          >
+                            Compare {chipPicker.selected.length} properties →
+                          </button>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )
         })()}
