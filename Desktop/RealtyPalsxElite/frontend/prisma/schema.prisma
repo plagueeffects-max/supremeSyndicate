@@ -114,6 +114,7 @@ model Project {
   marketing_claims   String[]
   ai_search_keywords String[]
   hero_image_url     String?
+  embedding          Unsupported("vector(1024)")?
   created_at         DateTime      @default(now())
   updated_at         DateTime      @updatedAt
 
@@ -199,6 +200,8 @@ model ChatSession {
   guest_token   String?
   title         String?
   message_count Int       @default(0)
+  chat_phase    String    @default("DISCOVERY")
+  last_projects Json?
   created_at    DateTime  @default(now())
   last_active   DateTime  @updatedAt
 
@@ -226,19 +229,23 @@ model ChatMessage {
 // ── User Data ─────────────────────────────────────────────────────────
 
 model UserMemory {
-  id                 String   @id @default(uuid())
-  user_id            String   @unique
-  bhk_preference     Int?
-  budget_min_cr      Float?
-  budget_max_cr      Float?
-  sector_preference  String?
-  purpose            String?
-  possession_pref    String?
-  viewed_slugs       String[]
-  rejected_slugs     String[]
-  saved_slugs        String[]
-  summary_text       String?
-  updated_at         DateTime @updatedAt
+  id                       String   @id @default(uuid())
+  user_id                  String   @unique
+  bhk_preference           Int?
+  budget_min_cr            Float?
+  budget_max_cr            Float?
+  sector_preference        String?
+  purpose                  String?
+  possession_pref          String?
+  viewed_slugs             String[]
+  rejected_slugs           String[]
+  saved_slugs              String[]
+  summary_text             String?
+  work_location            String?
+  home_loan_pre_approved   Boolean?
+  timeline_months          Int?
+  contact_phone            String?
+  updated_at               DateTime @updatedAt
 
   @@map("user_memory")
 }
@@ -254,4 +261,50 @@ model SavedProperty {
   @@unique([user_id, project_id])
   @@index([user_id])
   @@map("saved_properties")
+}
+
+model SiteVisitRequest {
+  id           String   @id @default(uuid())
+  project_id   String
+  project_slug String
+  project_name String
+  name         String
+  phone        String
+  email        String?
+  visit_date   DateTime
+  time_slot    String
+  message      String?
+  status       String   @default("pending")
+  created_at   DateTime @default(now())
+
+  @@index([project_slug])
+  @@map("site_visit_requests")
+}
+
+model PriceAlert {
+  id              String   @id @default(uuid())
+  user_id         String?
+  guest_token     String?
+  project_id      String
+  project_slug    String
+  target_price_cr Float
+  notified        Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  @@index([project_slug])
+  @@map("price_alerts")
+}
+
+model ProjectDocument {
+  id           String   @id @default(uuid())
+  project_id   String
+  project_slug String
+  name         String
+  storage_url  String
+  content_text String?
+  doc_type     String   @default("brochure")
+  created_at   DateTime @default(now())
+
+  @@index([project_slug])
+  @@map("project_documents")
 }

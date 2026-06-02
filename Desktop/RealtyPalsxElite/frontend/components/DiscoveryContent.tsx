@@ -355,6 +355,17 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
           router.replace('/discover', { scroll: false });
         }
 
+        // Restore chat phase
+        if (data.chat_phase === 'ADVISOR') {
+          setChatPhase('ADVISOR');
+        }
+
+        // Restore last property shortlist (re-surfaces cards after page reload / session resume)
+        if (Array.isArray(data.last_projects) && data.last_projects.length > 0) {
+          setLastShortlist(data.last_projects);
+          setShowRecommendations(true);
+        }
+
         if (data.messages && data.messages.length > 0) {
           const restored: ChatMessage[] = data.messages.map((m: { id: string; role: string; content: string; created_at: string }) => ({
             id: m.id,

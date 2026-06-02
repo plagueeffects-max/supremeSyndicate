@@ -15,6 +15,7 @@ import { calculateEmi, calculateStampDuty, calculateGst, formatInr } from '@/lib
 import type { SearchFilters } from '@/lib/repositories/projectRepository'
 import type { ProjectCard } from '@/types/project'
 import type { UserMemoryContext } from '@/lib/ai/prompts'
+import type { Prisma } from '@prisma/client'
 
 const MAX_HISTORY = 40
 
@@ -54,7 +55,6 @@ function formatProjects(projects: ProjectCard[]): string {
 }
 
 // Numeric fields accept string OR number — small models (8b) sometimes emit strings.
-// We coerce to number on our side after parsing.
 const NUM_OR_STR = { anyOf: [{ type: 'number' }, { type: 'string' }] }
 
 const SEARCH_PROPERTIES_TOOL = {
@@ -234,6 +234,7 @@ const TOOLS = [
   GET_AREA_INFO_TOOL,
   READ_RERA_TOOL,
 ]
+
 const KNOWN_TOOL_NAMES = new Set([
   'search_properties', 'search_web', 'get_commute_time',
   'calculate_emi', 'calculate_stamp_duty', 'calculate_gst',
@@ -286,10 +287,9 @@ export async function POST(request: NextRequest) {
   }
 
   const { message: rawMessage, session_id } = parsed.data
-  // Normalize Hindi/Hinglish before LLM processing
   const message = normalizeQuery(rawMessage)
 
-  // ── Parallel: fetch session + user memory at the same time ──────────────
+  // ── Parallel: fetch session + user memory ───────────────────────────────
   const [sessionResult, userMemoryResult] = await Promise.all([
     session_id
       ? prisma.chatSession.findUnique({
@@ -315,14 +315,12 @@ export async function POST(request: NextRequest) {
     content: m.content as string,
   }))
 
-  // Persist user message (fire and forget — awaited only when needed)
   const saveUserMsg = prisma.chatMessage.create({
     data: { session_id: sessionId, role: 'user', content: rawMessage },
   })
 
   const chatMessages = [...historyMsgs, { role: 'user' as const, content: message }]
 
-  // Build system prompt with user memory context
   const memoryCtx: UserMemoryContext | null = userMemoryResult
     ? {
         bhk_preference: userMemoryResult.bhk_preference ?? null,
@@ -335,9 +333,6 @@ export async function POST(request: NextRequest) {
     : null
 
   const systemPrompt = buildSystemPrompt(memoryCtx)
-
-  const smartClient = getSmartClient()
-  const smartModel = getSmartModel()
   const encoder = new TextEncoder()
   const t0 = Date.now()
 
@@ -354,32 +349,73 @@ export async function POST(request: NextRequest) {
       let finalText = ''
       let projects: ProjectCard[] = []
       let chatPhase: 'DISCOVERY' | 'ADVISOR' = 'DISCOVERY'
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let firstCompletionForMemory: any = null
+      // Stores tool call info for memory extraction after tool execution
+      let toolArgsForMemory: string | null = null
 
       try {
-        // ── Step 1: Smart model for tool detection (8b was unreliable with 8 tools) ──
-        const firstCompletion = await groq.chat.completions.create({
+        // ── Single-pass: stream first call. Forward text immediately; buffer tool calls. ──
+        const firstStream = await groq.chat.completions.create({
           model: GROQ_SMART,
           messages: [{ role: 'system', content: systemPrompt }, ...chatMessages],
           tools: TOOLS,
           tool_choice: 'auto',
           temperature: 0,
-          max_tokens: 256,
+          max_tokens: 1024,
+          stream: true as const,
         })
-        firstCompletionForMemory = firstCompletion
 
-        const firstMsg = firstCompletion.choices[0].message
-        // Guard: if model hallucinated a tool name not in our list, ignore the tool call
-        const rawToolCall = firstMsg.tool_calls?.[0]
-        const toolCall = rawToolCall && KNOWN_TOOL_NAMES.has(rawToolCall.function.name)
-          ? rawToolCall
-          : undefined
+        let toolCallId = ''
+        let toolCallName = ''
+        let toolCallArgs = ''
+        let isToolCall = false
 
-        if (rawToolCall && !toolCall) {
-          console.warn(`[chat] ⚠ hallucinated tool ignored: "${rawToolCall.function.name}"`)
+        for await (const chunk of firstStream) {
+          const delta = chunk.choices[0]?.delta
+          if (!delta) continue
+
+          if (delta.tool_calls?.length) {
+            isToolCall = true
+            const tc = delta.tool_calls[0]
+            if (tc.id) toolCallId = tc.id
+            if (tc.function?.name) toolCallName += tc.function.name
+            if (tc.function?.arguments) toolCallArgs += tc.function.arguments
+          } else if (delta.content) {
+            // No tool — stream tokens directly to user (single pass, no second call)
+            finalText += delta.content
+            send({ type: 'text', delta: delta.content })
+          }
         }
-        console.log(`[chat] 🔧 tool=${toolCall?.function.name ?? 'none'} args=${toolCall ? toolCall.function.arguments.slice(0, 200) : '-'}`)
+
+        // ── Hallucination guard ──────────────────────────────────────────────
+        if (isToolCall && !KNOWN_TOOL_NAMES.has(toolCallName)) {
+          console.warn(`[chat] ⚠ hallucinated tool ignored: "${toolCallName}" — falling back to direct stream`)
+          await saveUserMsg
+          const fallbackStream = await getSmartClient().chat.completions.create({
+            model: getSmartModel(),
+            messages: [{ role: 'system', content: systemPrompt }, ...chatMessages],
+            temperature: 0.3,
+            max_tokens: 1024,
+            stream: true as const,
+          })
+          finalText = ''
+          for await (const chunk of fallbackStream) {
+            const delta = chunk.choices[0]?.delta?.content
+            if (delta) { finalText += delta; send({ type: 'text', delta }) }
+          }
+          await persistAndDone()
+          return
+        }
+
+        // ── No tool — text was already streamed above ─────────────────────────
+        if (!isToolCall) {
+          await saveUserMsg
+          await persistAndDone()
+          return
+        }
+
+        // ── Tool path ────────────────────────────────────────────────────────
+        console.log(`[chat] 🔧 tool=${toolCallName} args=${toolCallArgs.slice(0, 200)}`)
+        toolArgsForMemory = toolCallArgs
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const secondMessages: any[] = [
@@ -387,24 +423,26 @@ export async function POST(request: NextRequest) {
           ...chatMessages,
           {
             role: 'assistant',
-            content: firstMsg.content ?? null,
-            // Only forward tool_calls if we recognized the tool — otherwise omit to avoid API rejection
-            ...(toolCall ? { tool_calls: firstMsg.tool_calls } : {}),
+            content: null,
+            tool_calls: [{
+              id: toolCallId,
+              type: 'function',
+              function: { name: toolCallName, arguments: toolCallArgs },
+            }],
           },
         ]
 
-        if (toolCall?.function.name === 'search_properties') {
+        if (toolCallName === 'search_properties') {
           send({ type: 'searching' })
 
           let filters: SearchFilters = {}
           try {
-            const raw = JSON.parse(toolCall.function.arguments) as Record<string, unknown>
+            const raw = JSON.parse(toolCallArgs) as Record<string, unknown>
             filters = coerceFilters(raw)
           } catch { /* ok */ }
 
           console.log(`[chat] 🔍 search_properties filters:`, JSON.stringify(filters))
 
-          // Save user message while searching (parallel)
           const [, searchResults] = await Promise.all([
             saveUserMsg,
             searchProjects(filters, message),
@@ -419,13 +457,13 @@ export async function POST(request: NextRequest) {
               ? 'No properties found. Tell the user we have limited inventory and ask if they want to broaden their search.'
               : formatProjects(projects)
 
-          secondMessages.push({ role: 'tool', tool_call_id: toolCall.id, content: toolResult })
+          secondMessages.push({ role: 'tool', tool_call_id: toolCallId, content: toolResult })
 
-        } else if (toolCall?.function.name === 'search_web') {
+        } else if (toolCallName === 'search_web') {
           send({ type: 'searching' })
 
           let webQuery = ''
-          try { webQuery = JSON.parse(toolCall.function.arguments).query as string } catch { /* ok */ }
+          try { webQuery = JSON.parse(toolCallArgs).query as string } catch { /* ok */ }
 
           console.log(`[chat] 🌐 search_web query="${webQuery}"`)
 
@@ -438,25 +476,25 @@ export async function POST(request: NextRequest) {
               tavilySearch(webQuery, 3),
             ])
             webContext = formatTavilyContext(webResult.answer, webResult.results) || ''
-            console.log(`[chat] 🌐 web result src=${webResult.source} results=${webResult.results.length} cached=false`)
+            console.log(`[chat] 🌐 web src=${webResult.source} results=${webResult.results.length} cached=false`)
             if (webContext) await setCached(webCacheKey, webContext, 60 * 60 * 24)
           } else {
-            console.log(`[chat] 🌐 web result cached=true`)
+            console.log(`[chat] 🌐 web cached=true`)
             await saveUserMsg
           }
 
           secondMessages.push({
             role: 'tool',
-            tool_call_id: toolCall.id,
+            tool_call_id: toolCallId,
             content: webContext || 'No current information found for this query. Answer from your training knowledge.',
           })
 
-        } else if (toolCall?.function.name === 'get_commute_time') {
+        } else if (toolCallName === 'get_commute_time') {
           send({ type: 'searching' })
 
           let origin = '', destination = ''
           try {
-            const args = JSON.parse(toolCall.function.arguments)
+            const args = JSON.parse(toolCallArgs)
             origin = args.origin as string
             destination = args.destination as string
           } catch { /* ok */ }
@@ -467,10 +505,7 @@ export async function POST(request: NextRequest) {
           let commuteData = await getCached<object>(commuteKey)
 
           if (!commuteData) {
-            const [, result] = await Promise.all([
-              saveUserMsg,
-              getCommuteTime(origin, destination),
-            ])
+            const [, result] = await Promise.all([saveUserMsg, getCommuteTime(origin, destination)])
             if (result) {
               commuteData = result
               await setCached(commuteKey, result, 60 * 60 * 6)
@@ -479,20 +514,18 @@ export async function POST(request: NextRequest) {
             await saveUserMsg
           }
 
-          const commuteContent = commuteData
-            ? JSON.stringify(commuteData)
-            : `Could not calculate commute from "${origin}" to "${destination}". Share approximate distance/travel time from general knowledge.`
-
           secondMessages.push({
             role: 'tool',
-            tool_call_id: toolCall.id,
-            content: commuteContent,
+            tool_call_id: toolCallId,
+            content: commuteData
+              ? JSON.stringify(commuteData)
+              : `Could not calculate commute from "${origin}" to "${destination}". Share approximate distance/travel time from general knowledge.`,
           })
 
-        } else if (toolCall?.function.name === 'calculate_emi') {
+        } else if (toolCallName === 'calculate_emi') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let args: any = { principal_cr: 1, annual_rate: 8.5, tenure_years: 20 }
-          try { Object.assign(args, JSON.parse(toolCall.function.arguments)) } catch { /* ok */ }
+          try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           console.log(`[chat] 🧮 calculate_emi principal=${args.principal_cr}Cr rate=${args.annual_rate}% tenure=${args.tenure_years}yr`)
           const r = calculateEmi(Number(args.principal_cr), Number(args.annual_rate), Number(args.tenure_years))
           const toolResult = [
@@ -502,12 +535,12 @@ export async function POST(request: NextRequest) {
             `Total interest: ${formatInr(r.total_interest)}`,
           ].join('\n')
           await saveUserMsg
-          secondMessages.push({ role: 'tool', tool_call_id: toolCall.id, content: toolResult })
+          secondMessages.push({ role: 'tool', tool_call_id: toolCallId, content: toolResult })
 
-        } else if (toolCall?.function.name === 'calculate_stamp_duty') {
+        } else if (toolCallName === 'calculate_stamp_duty') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let args: any = { price_cr: 1, buyer_gender: 'male' }
-          try { Object.assign(args, JSON.parse(toolCall.function.arguments)) } catch { /* ok */ }
+          try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           const r = calculateStampDuty(Number(args.price_cr), args.buyer_gender ?? 'male')
           const toolResult = [
             `Stamp Duty (${r.stamp_duty_rate}%): ${formatInr(r.stamp_duty)}`,
@@ -516,12 +549,12 @@ export async function POST(request: NextRequest) {
             `Note: ${r.note}`,
           ].join('\n')
           await saveUserMsg
-          secondMessages.push({ role: 'tool', tool_call_id: toolCall.id, content: toolResult })
+          secondMessages.push({ role: 'tool', tool_call_id: toolCallId, content: toolResult })
 
-        } else if (toolCall?.function.name === 'calculate_gst') {
+        } else if (toolCallName === 'calculate_gst') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let args: any = { price_cr: 1, status: 'under_construction', carpet_sqm: 0 }
-          try { Object.assign(args, JSON.parse(toolCall.function.arguments)) } catch { /* ok */ }
+          try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           const r = calculateGst(Number(args.price_cr), args.status, Number(args.carpet_sqm ?? 0))
           const toolResult = [
             `GST (${r.gst_rate}%): ${formatInr(r.gst_amount)}`,
@@ -529,23 +562,23 @@ export async function POST(request: NextRequest) {
             `Note: ${r.note}`,
           ].join('\n')
           await saveUserMsg
-          secondMessages.push({ role: 'tool', tool_call_id: toolCall.id, content: toolResult })
+          secondMessages.push({ role: 'tool', tool_call_id: toolCallId, content: toolResult })
 
-        } else if (toolCall?.function.name === 'get_area_info') {
+        } else if (toolCallName === 'get_area_info') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let args: any = { sector: 'Sector 150', city: 'Noida' }
-          try { Object.assign(args, JSON.parse(toolCall.function.arguments)) } catch { /* ok */ }
+          try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           const [, wikiResult] = await Promise.all([saveUserMsg, getAreaInfo(args.sector, args.city)])
           const toolResult = wikiResult
             ? `${wikiResult.title}: ${wikiResult.extract}\nSource: ${wikiResult.url}`
             : `No Wikipedia article found for ${args.sector}, ${args.city}. Answer from your knowledge of Noida.`
-          secondMessages.push({ role: 'tool', tool_call_id: toolCall.id, content: toolResult })
+          secondMessages.push({ role: 'tool', tool_call_id: toolCallId, content: toolResult })
 
-        } else if (toolCall?.function.name === 'read_rera_page') {
+        } else if (toolCallName === 'read_rera_page') {
           send({ type: 'searching' })
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let args: any = {}
-          try { Object.assign(args, JSON.parse(toolCall.function.arguments)) } catch { /* ok */ }
+          try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           const reraUrl: string = args.rera_url || (args.rera_number
             ? `https://www.up-rera.in/projects?project_search=${encodeURIComponent(args.rera_number)}`
             : 'https://www.up-rera.in')
@@ -553,36 +586,16 @@ export async function POST(request: NextRequest) {
           const toolResult = reraContent
             ? `RERA page for ${args.rera_number || 'search'}:\n${reraContent}`
             : `Could not fetch RERA page. Advise user to visit https://www.up-rera.in directly.`
-          secondMessages.push({ role: 'tool', tool_call_id: toolCall.id, content: toolResult })
-
-        } else {
-          // ── No tool — direct stream with smart model ─────────────────
-          await saveUserMsg
-
-          const streamResp = await smartClient.chat.completions.create({
-            model: smartModel,
-            messages: [{ role: 'system', content: systemPrompt }, ...chatMessages],
-            temperature: 0.3,
-            max_tokens: 1024,
-            stream: true as const,
-          })
-
-          for await (const chunk of streamResp) {
-            const delta = chunk.choices[0]?.delta?.content
-            if (delta) { finalText += delta; send({ type: 'text', delta }) }
-          }
-
-          await persistAndDone()
-          return
+          secondMessages.push({ role: 'tool', tool_call_id: toolCallId, content: toolResult })
         }
 
-        // ── Step 2: Smart model for advisor response ─────────────────────
-        const streamResp = await smartClient.chat.completions.create({
-          model: smartModel,
+        // ── Second pass: stream the advisor response ──────────────────────────
+        const streamResp = await getSmartClient().chat.completions.create({
+          model: getSmartModel(),
           messages: secondMessages,
           temperature: 0.3,
           max_tokens: 1024,
-          stream: true,
+          stream: true as const,
         })
 
         for await (const chunk of streamResp) {
@@ -608,23 +621,26 @@ export async function POST(request: NextRequest) {
       }
 
       async function persistAndDone() {
-        // Parallel: save assistant message + update session counter
         const persistPromises: Promise<unknown>[] = [
           prisma.chatMessage.create({
             data: { session_id: sessionId, role: 'assistant', content: finalText || '...' },
           }),
           prisma.chatSession.update({
             where: { id: sessionId },
-            data: { message_count: { increment: 2 } },
+            data: {
+              message_count: { increment: 2 },
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ...(chatPhase === 'ADVISOR' && { chat_phase: chatPhase } as any),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ...(projects.length > 0 && { last_projects: projects as unknown as Prisma.JsonArray } as any),
+            },
           }),
         ]
 
         if (projects.length > 0) {
-          // Extract filters — must go through coerceFilters to convert string numbers → Int/Float
           let filters: SearchFilters = {}
           try {
-            const args = firstCompletionForMemory?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments
-            if (args) filters = coerceFilters(JSON.parse(args) as Record<string, unknown>)
+            if (toolArgsForMemory) filters = coerceFilters(JSON.parse(toolArgsForMemory) as Record<string, unknown>)
           } catch { /* ok */ }
 
           const newViewedSlugs = projects.map((p) => p.slug)
@@ -649,7 +665,6 @@ export async function POST(request: NextRequest) {
         }
 
         await Promise.all(persistPromises)
-
         console.log(`[chat] ✅ done in ${Date.now() - t0}ms | phase=${chatPhase} projects=${projects.length} chars=${finalText.length}`)
 
         send({
