@@ -51,9 +51,7 @@ const nextConfig = {
 module.exports = withSentryConfig(nextConfig, {
   org: 'realtypals',
   project: 'realtypals-sentry',
-  silent: !process.env.CI,
+  silent: true,
   widenClientFileUpload: true,
   hideSourceMaps: true,
-  disableLogger: true,
-  automaticVercelMonitors: true,
 })
