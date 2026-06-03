@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { notifyLead } from '@/lib/leadNotify'
 
 const BodySchema = z.object({
   name:         z.string().min(1).max(100).trim(),
@@ -41,6 +42,15 @@ export async function POST(request: NextRequest) {
     })
 
     console.log(`[callback] ✅ lead: ${name} ${phone} → ${project_name ?? 'general'}`)
+    notifyLead({
+      type: 'callback',
+      name,
+      phone,
+      project_name: project_name ?? 'General',
+      project_slug: project_slug ?? 'general',
+      message: message ?? undefined,
+      timestamp: new Date().toISOString(),
+    }).catch(() => {})
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[callback] ❌', err)

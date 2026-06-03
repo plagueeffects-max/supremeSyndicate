@@ -1,6 +1,8 @@
+const { withSentryConfig } = require('@sentry/nextjs')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // react-leaflet v5 + leaflet are ESM-only; Next.js needs explicit transpilation
+  experimental: { instrumentationHook: true },
   transpilePackages: ['leaflet', 'react-leaflet'],
   images: {
     remotePatterns: [
@@ -46,4 +48,12 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withSentryConfig(nextConfig, {
+  org: 'realtypals',
+  project: 'realtypals-sentry',
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  automaticVercelMonitors: true,
+})

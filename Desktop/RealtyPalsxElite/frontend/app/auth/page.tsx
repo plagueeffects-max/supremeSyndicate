@@ -6,7 +6,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Eye, EyeOff, Mail, Lock, User as UserIcon } from 'lucide-react';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase'
+import { track, identifyUser } from '@/lib/analytics';
+import Toast from '@/components/Toast';
 
 type Mode = 'login' | 'register';
 
@@ -19,7 +21,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [toast, setToast] = useState<string | null>(null);
   const router = useRouter();
   const supabaseRef = useRef(createClient());
   const supabase = supabaseRef.current;
@@ -39,8 +41,8 @@ export default function AuthPage() {
     e.preventDefault();
     if (!email.trim() || !password.trim() || loading) return;
     setLoading(true);
+    track('signup_started', { mode })
     setError('');
-    setMessage('');
 
     try {
       if (mode === 'login') {
@@ -60,6 +62,7 @@ export default function AuthPage() {
         }
         if (data.user) {
           localStorage.setItem('user_id', data.user.id);
+          identifyUser(data.user.id, { email: data.user.email })
           router.push('/discover');
         }
       } else {
@@ -71,13 +74,12 @@ export default function AuthPage() {
         if (authError) throw authError;
         if (data.user?.identities?.length === 0) {
           setError('An account with this email already exists. Sign in instead.');
-        } else if (data.session) {
-          // Email confirmation disabled — logged in immediately
-          localStorage.setItem('user_id', data.user!.id);
-          router.push('/discover');
         } else {
-          setMessage('Check your email for a confirmation link, then sign in.');
+          // Registration successful — show toast and switch to login with prefilled creds
+          track('signup_completed', { email: email.trim().toLowerCase() })
+          setToast('Account created! Please sign in.');
           setMode('login');
+          // email and password stay filled — user just clicks Sign In
         }
       }
     } catch (err: unknown) {
@@ -90,7 +92,6 @@ export default function AuthPage() {
   const switchMode = (m: Mode) => {
     setMode(m);
     setError('');
-    setMessage('');
     setShowPassword(false);
   };
 
@@ -201,12 +202,6 @@ export default function AuthPage() {
               </div>
             )}
 
-            {message && (
-              <div className="bg-emerald-500/[0.08] border border-emerald-500/15 rounded-xl px-4 py-3">
-                <p className="text-emerald-400 text-[12px] leading-relaxed">{message}</p>
-              </div>
-            )}
-
             <button
               type="submit"
               disabled={loading}
@@ -244,6 +239,7 @@ export default function AuthPage() {
           AI-powered real estate advisor · Noida · V1
         </p>
       </div>
+      {toast && <Toast message={toast} duration={3000} onClose={() => setToast(null)} />}
     </div>
   );
 }

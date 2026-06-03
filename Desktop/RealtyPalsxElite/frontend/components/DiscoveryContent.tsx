@@ -13,7 +13,8 @@ import ThemeToggle from '@/components/ThemeToggle';
 import VisualGuide from './VisualGuide';
 import Image from 'next/image';
 import Toast from '@/components/Toast';
-import { API_BASE } from '@/lib/env';
+import { API_BASE } from '@/lib/env'
+import { track } from '@/lib/analytics';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Header from '@/components/Header';
@@ -106,6 +107,28 @@ const SUGGESTION_CHIPS = [
   'Compare ATS Kingston Heath vs Godrej Palm Retreat',
 ];
 
+function RateLimitBanner({ until, onExpire }: { until: number; onExpire: () => void }) {
+  const [secsLeft, setSecsLeft] = useState(Math.ceil((until - Date.now()) / 1000));
+  useEffect(() => {
+    if (secsLeft <= 0) { onExpire(); return; }
+    const t = setTimeout(() => setSecsLeft(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [secsLeft, onExpire]);
+  return (
+    <div className="mx-4 mb-2 px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 flex items-center gap-3">
+      <span className="text-amber-600 dark:text-amber-400 text-sm font-medium">
+        Sending too fast — wait {secsLeft}s
+      </span>
+      <div className="ml-auto h-1.5 w-16 bg-amber-200 dark:bg-amber-800 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-amber-500 rounded-full transition-all duration-1000"
+          style={{ width: `${(secsLeft / 60) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 interface DiscoveryContentProps {
   userId: string | null;
 }
@@ -121,11 +144,16 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [restoreError, setRestoreError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
+  const [rateLimitUntil, setRateLimitUntil] = useState<number | null>(null);
   const [chatTurnCount, setChatTurnCount] = useState(0);
   const [hasShownLengthWarning, setHasShownLengthWarning] = useState(false);
   const [chatPhase, setChatPhase] = useState<'DISCOVERY' | 'ADVISOR'>('DISCOVERY');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [detailProject, setDetailProject] = useState<ProjectCardType | null>(null);
+  const openDetailProject = useCallback((project: ProjectCardType | null) => {
+    setDetailProject(project)
+    if (project) track('property_viewed', { project_slug: project.slug, project_name: project.name })
+  }, []);
   const [lastShortlist, setLastShortlist] = useState<ProjectCardType[]>([]);
   const [expandedShortlists, setExpandedShortlists] = useState<Set<string>>(new Set());
   const [showMap, setShowMap] = useState(false);
@@ -278,14 +306,14 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const vv = window.visualViewport;
     const onResize = () => {
       if (!vv) return;
       const isOpen = vv.height < window.innerHeight * 0.75;
       setKeyboardOpen(isOpen);
       setViewportHeight(`${vv.height}px`);
-      
+
       if (isOpen) {
         setTimeout(scrollToBottom, 50);
       }
@@ -309,7 +337,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
       const { scrollTop, scrollHeight, clientHeight } = container;
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
       setShowScrollBtn(distanceFromBottom > 150);
-      
+
       // Minimize input if scrolled up significantly (on mobile)
       if (window.innerWidth < 768) {
         if (distanceFromBottom > 200) {
@@ -501,6 +529,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     };
     setChatHistory(prev => [...prev, userMsg]);
     setChatTurnCount(c => c + 1);
+    if (chatTurnCount === 0) track('chat_started', { session_id: sessionId })
     setChatInput('');
 
     // Add streaming placeholder AI message
@@ -527,6 +556,12 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
         signal: controller.signal,
       });
 
+      if (response.status === 429) {
+        const retryAfter = parseInt(response.headers.get('Retry-After') ?? '60', 10)
+        setRateLimitUntil(Date.now() + retryAfter * 1000)
+        setChatHistory(prev => prev.filter(m => m.id !== streamId))
+        return
+      }
       if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
 
       const reader = response.body.getReader();
@@ -581,6 +616,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
                 : m
             ));
             if (hasProjects) setLastShortlist(d.projects);
+            if (hasProjects) track('recommendation_generated', { count: d.projects.length, session_id: d.session_id })
             setShowRecommendations(hasProjects);
             setExpandedShortlists(new Set());
           }
@@ -879,7 +915,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
                   <div className="mt-3 flex sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 overflow-x-auto snap-x snap-mandatory sm:overflow-x-visible pb-2 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
                     {message.properties.map((property, pi) => (
                       <div key={property.id} className="min-w-[85vw] sm:min-w-0 snap-center flex-shrink-0 sm:flex-shrink">
-                        <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={setDetailProject} onCallback={setCallbackProject} />
+                        <ProjectCard project={property} userId={userId} index={pi} onDetailOpen={openDetailProject} onCallback={setCallbackProject} />
                       </div>
                     ))}
                   </div>
@@ -918,7 +954,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
                       project={property}
                       userId={userId}
                       index={pi}
-                      onDetailOpen={setDetailProject}
+                      onDetailOpen={openDetailProject}
                       onCallback={setCallbackProject}
                     />
                   </div>
@@ -971,7 +1007,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
                     project={p}
                     userId={userId}
                     index={pi}
-                    onDetailOpen={setDetailProject}
+                    onDetailOpen={openDetailProject}
                   />
                 ))}
               </div>
@@ -1128,6 +1164,9 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   // ── Chat input form ──
   const chatInputForm = (
     <div className="w-full">
+      {rateLimitUntil && (
+        <RateLimitBanner until={rateLimitUntil} onExpire={() => setRateLimitUntil(null)} />
+      )}
       <div className="relative flex items-center gap-2">
         {/* Reset / New Chat Button */}
         <div id="new-chat-guide">
@@ -1172,7 +1211,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             <Mic size={18} className="text-gray-500 dark:text-gray-400" />
           )}
         </button>
-        
+
         {/* Help / Guide Button */}
         <div id="help-guide">
           <VisualGuide />
