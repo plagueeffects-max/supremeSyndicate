@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE() {
+  const isProduction = process.env.NODE_ENV === 'production'
   const res = Response.json({ ok: true })
-  res.headers.set('Set-Cookie', 'admin_token=; Path=/; HttpOnly; Max-Age=0')
+  res.headers.set('Set-Cookie', `admin_token=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${isProduction ? '; Secure' : ''}`)
   return res
 }
