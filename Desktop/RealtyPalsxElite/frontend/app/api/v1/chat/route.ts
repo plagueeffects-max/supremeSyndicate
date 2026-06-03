@@ -629,6 +629,7 @@ export async function POST(request: NextRequest) {
             where: { id: sessionId },
             data: {
               message_count: { increment: 2 },
+              ...(!session.title && { title: rawMessage.slice(0, 60) }),
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ...(chatPhase === 'ADVISOR' && { chat_phase: chatPhase } as any),
               // eslint-disable-next-line @typescript-eslint/no-explicit-any

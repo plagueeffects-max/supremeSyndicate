@@ -9,27 +9,23 @@ export async function GET(request: NextRequest) {
   const userId = getUserId(request)
   if (!userId) return NextResponse.json({ error: 'X-User-Id header required' }, { status: 400 })
 
-  const sessions = await prisma.chatSession.findMany({
-    where: { user_id: userId },
-    orderBy: { last_active: 'desc' },
-    take: 5,
-    include: {
-      messages: {
-        where: { role: 'user' },
-        orderBy: { created_at: 'asc' },
-        take: 1,
-      },
-    },
-  })
+  try {
+    const sessions = await prisma.chatSession.findMany({
+      where: { user_id: userId },
+      orderBy: { last_active: 'desc' },
+      take: 10,
+      select: { id: true, title: true, last_active: true },
+    })
 
-  return NextResponse.json({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sessions: sessions.map((s: any) => ({
-      id: s.id,
-      label: s.messages[0]?.content
-        ? s.messages[0].content.slice(0, 45) + (s.messages[0].content.length > 45 ? '…' : '')
-        : `Chat ${new Date(s.last_active).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
-      last_active: s.last_active,
-    })),
-  })
+    return NextResponse.json({
+      sessions: sessions.map((s) => ({
+        id: s.id,
+        label: s.title ??
+          `Chat ${new Date(s.last_active).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`,
+        last_active: s.last_active,
+      })),
+    })
+  } catch {
+    return NextResponse.json({ sessions: [] })
+  }
 }
