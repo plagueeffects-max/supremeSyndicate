@@ -535,7 +535,7 @@ export async function POST(request: NextRequest) {
 
         } else if (toolCallName === 'calculate_emi') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let args: any = { principal_cr: 1, annual_rate: 8.5, tenure_years: 20 }
+          const args: any = { principal_cr: 1, annual_rate: 8.5, tenure_years: 20 }
           try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           console.log(`[chat] 🧮 calculate_emi principal=${args.principal_cr}Cr rate=${args.annual_rate}% tenure=${args.tenure_years}yr`)
           const r = calculateEmi(Number(args.principal_cr), Number(args.annual_rate), Number(args.tenure_years))
@@ -550,7 +550,7 @@ export async function POST(request: NextRequest) {
 
         } else if (toolCallName === 'calculate_stamp_duty') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let args: any = { price_cr: 1, buyer_gender: 'male' }
+          const args: any = { price_cr: 1, buyer_gender: 'male' }
           try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           const r = calculateStampDuty(Number(args.price_cr), args.buyer_gender ?? 'male')
           const toolResult = [
@@ -564,7 +564,7 @@ export async function POST(request: NextRequest) {
 
         } else if (toolCallName === 'calculate_gst') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let args: any = { price_cr: 1, status: 'under_construction', carpet_sqm: 0 }
+          const args: any = { price_cr: 1, status: 'under_construction', carpet_sqm: 0 }
           try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           const r = calculateGst(Number(args.price_cr), args.status, Number(args.carpet_sqm ?? 0))
           const toolResult = [
@@ -577,7 +577,7 @@ export async function POST(request: NextRequest) {
 
         } else if (toolCallName === 'get_area_info') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let args: any = { sector: 'Sector 150', city: 'Noida' }
+          const args: any = { sector: 'Sector 150', city: 'Noida' }
           try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           const [, wikiResult] = await Promise.all([saveUserMsg, getAreaInfo(args.sector, args.city)])
           const toolResult = wikiResult
@@ -588,7 +588,7 @@ export async function POST(request: NextRequest) {
         } else if (toolCallName === 'read_rera_page') {
           send({ type: 'searching' })
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          let args: any = {}
+          const args: any = {}
           try { Object.assign(args, JSON.parse(toolCallArgs)) } catch { /* ok */ }
           const reraUrl: string = args.rera_url || (args.rera_number
             ? `https://www.up-rera.in/projects?project_search=${encodeURIComponent(args.rera_number)}`

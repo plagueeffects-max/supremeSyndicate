@@ -77,16 +77,9 @@ function getFollowUpChips(
       { emoji: '📅', label: 'Book Site Visit',   picker: 'single', pickerAction: 'site_visit', pickerModal: true },
       { emoji: '📞', label: 'Get Callback',       picker: 'single', pickerAction: 'callback',   pickerModal: true },
       { emoji: '📊', label: 'Calculate EMI',      picker: 'single', pickerAction: 'emi' },
-      { emoji: '🏷️', label: 'Stamp Duty',        picker: 'single', pickerAction: 'stamp_duty' },
-      { emoji: '💸', label: 'GST',                picker: 'single', pickerAction: 'gst' },
       ...(shortlist.length >= 2 ? [{ emoji: '⚖️', label: 'Compare', picker: 'multi' as ChipPickerMode, pickerAction: 'compare' }] : []),
-      { emoji: '🧮', label: 'Calculator',         special: '__open_calculator__' },
-      { emoji: '📤', label: 'Share shortlist',    special: '__share_shortlist__' },
-      { emoji: '🇮🇳', label: 'Hindi mein batao', msg: 'Please explain your last response in simple Hindi' },
       { emoji: '🏗️', label: 'Builder track record', picker: 'single', pickerAction: 'builder' },
       { emoji: '📍', label: 'Area overview',      picker: 'single', pickerAction: 'area' },
-      { emoji: '⚠️', label: 'Risks & concerns',   picker: 'single', pickerAction: 'risks' },
-      { emoji: '🔍', label: 'More options',       msg: 'Show me more properties similar to these in Noida' },
     ]
   }
   if (phase === 'DISCOVERY' && turnCount >= 2) {
@@ -1024,10 +1017,10 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.15 }}
-              className="mt-3 ml-14"
+              className="mt-3 ml-0 sm:ml-14"
             >
-              {/* Chip row */}
-              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              {/* Chip row — wraps on all screen sizes, no horizontal scroll */}
+              <div className="flex flex-wrap gap-2">
                 {chips.map((chip) => {
                   const isActive = chipPicker?.label === chip.label
                   return (
@@ -1042,7 +1035,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
                           setChipPicker({ mode: chip.picker, action: chip.pickerAction, label: chip.label, isModal: chip.pickerModal ?? false, selected: [] })
                         }
                       }}
-                      className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-semibold transition-all shadow-sm whitespace-nowrap border ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-[12px] font-semibold transition-all shadow-sm whitespace-nowrap border ${
                         isActive
                           ? 'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900'
                           : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300'
@@ -1493,7 +1486,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
                   >
                     {callbackSubmitting ? 'Sending...' : '📞 Request Callback'}
                   </button>
-                  <p className="text-[11px] text-gray-400 text-center mt-2">We'll call within 2 hours · Business hours only</p>
+                  <p className="text-[11px] text-gray-400 text-center mt-2">We&apos;ll call within 2 hours · Business hours only</p>
                 </>
               )}
             </motion.div>
