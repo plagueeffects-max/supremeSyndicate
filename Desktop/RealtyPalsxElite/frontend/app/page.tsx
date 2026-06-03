@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
@@ -10,17 +10,22 @@ import { createClient } from '@/lib/supabase';
 export default function LandingPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    let cancelled = false;
+    supabaseRef.current.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
       if (data.session?.user) {
         localStorage.setItem('user_id', data.session.user.id);
         router.replace('/discover');
       } else {
         setChecking(false);
       }
+    }).catch(() => {
+      if (!cancelled) setChecking(false);
     });
+    return () => { cancelled = true; };
   }, []);
 
   if (checking) {
@@ -50,7 +55,7 @@ export default function LandingPage() {
         {/* Logo */}
         <div className="mb-0 md:mb-4 flex flex-col items-center animate-fade-in-up">
           <Image
-            src="/images/logo/Transparent.png"
+            src="/images/logo/realtypals.png"
             alt="RealtyPals Logo"
             width={350}
             height={140}
