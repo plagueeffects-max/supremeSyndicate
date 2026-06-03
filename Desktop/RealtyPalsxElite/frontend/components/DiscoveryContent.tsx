@@ -118,6 +118,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [toast, setToast] = useState<{ message: string } | null>(null);
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [restoreError, setRestoreError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitLockRef = useRef(false);
   const [chatTurnCount, setChatTurnCount] = useState(0);
@@ -157,6 +158,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const streamingMsgIdRef = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
 
@@ -439,13 +441,19 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
             timestamp: new Date().toISOString(),
           }]);
         }
-      } catch {
-        setChatHistory([{
-          id: crypto.randomUUID(),
-          type: 'ai',
-          content: "Hey, I am RealtyPal at your assistance, tell me how can I help you?",
-          timestamp: new Date().toISOString(),
-        }]);
+      } catch (err) {
+        console.error('[session-restore] failed:', err);
+        const sessionFromUrl = searchParams.get('session');
+        if (sessionFromUrl) {
+          setRestoreError(true);
+        } else {
+          setChatHistory([{
+            id: crypto.randomUUID(),
+            type: 'ai',
+            content: "Hey, I am RealtyPal at your assistance, tell me how can I help you?",
+            timestamp: new Date().toISOString(),
+          }]);
+        }
       } finally {
         setIsInitialized(true);
       }
@@ -471,6 +479,12 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
       delete (window as any).__resetDiscoveryChat;
     };
   }, [userId]);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const streamChat = useCallback(async (userText: string): Promise<void> => {
     if (!userId || isSubmitting || submitLockRef.current) return;
@@ -502,10 +516,15 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
     }]);
 
     try {
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-User-Id': userId },
         body: JSON.stringify({ message: userText, session_id: sessionId }),
+        signal: controller.signal,
       });
 
       if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
@@ -583,6 +602,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
       });
 
     } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return;
       const errorMsg = err instanceof Error ? err.message : '';
       setChatHistory(prev => prev.map(m =>
         m.id === streamId
@@ -636,6 +656,11 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
   const submitMessage = useCallback((text: string) => {
     streamChat(text);
   }, [streamChat]);
+
+  const followUpChips = useMemo(
+    () => getFollowUpChips(chatPhase, lastShortlist, chatTurnCount),
+    [chatPhase, lastShortlist, chatTurnCount],
+  );
 
   // ── Carousel navigation helper ──
   const setCarouselIndex = (msgIndex: number, imgIndex: number) => {
@@ -762,8 +787,8 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
                 </div>
               )}
               <Image
-                src={message.images[carouselIndexes[index] || 0]?.url || message.images[0].url}
-                alt={message.images[carouselIndexes[index] || 0]?.caption || 'Property image'}
+                src={message.images[carouselIndexes[index] ?? 0]?.url ?? message.images[0]?.url ?? ''}
+                alt={message.images[carouselIndexes[index] ?? 0]?.caption ?? 'Property image'}
                 width={680}
                 height={400}
                 className="w-full h-72 object-cover"
@@ -956,7 +981,7 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
 
         {/* ── Follow-up chips + property picker ── */}
         {message.type === 'ai' && message.content && index === chatHistory.length - 1 && !isSubmitting && (() => {
-          const chips = getFollowUpChips(chatPhase, lastShortlist, chatTurnCount)
+          const chips = followUpChips
           if (chips.length === 0) return null
           return (
             <motion.div
@@ -1219,6 +1244,26 @@ export default function DiscoveryContent({ userId }: DiscoveryContentProps) {
           <>
             <div ref={chatContainerRef} className="flex-1 h-full min-h-0 overflow-y-auto px-4 md:px-8 pt-6 pb-36 relative z-10">
               <div className="max-w-4xl mx-auto space-y-6">
+                {restoreError && (
+                  <div className="flex flex-col items-center justify-center flex-1 gap-4 p-8 text-center">
+                    <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                      <AlertTriangle size={24} className="text-red-500" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Could not load chat</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">This session may have expired or been deleted.</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setRestoreError(false);
+                        setIsInitialized(false);
+                      }}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      Start new chat
+                    </button>
+                  </div>
+                )}
                 {chatHistory.map((message, index) => renderMessage(message, index))}
 
                 <div ref={chatEndRef} />
