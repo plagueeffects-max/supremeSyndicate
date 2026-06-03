@@ -4,6 +4,15 @@ import { cohereRerank } from '@/lib/ai/cohere'
 import { getCached, setCached, makeKey } from '@/lib/redis'
 import type { ProjectCard, ProjectDetail, UnitTypeSummary, AmenitySummary, ConnSummary } from '@/types/project'
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`timeout after ${ms}ms`)), ms)
+    ),
+  ])
+}
+
 const CATEGORY_ORDER = ['sports', 'lifestyle', 'wellness', 'kids', 'security', 'parking'] as const
 const CONN_PRIORITY = ['metro', 'airport', 'road'] as const
 
@@ -140,25 +149,33 @@ export async function searchProjects(
     return []
   }
 
-  // Rerank chain: Jina (primary) → Cohere (fallback) → DB order
+  // Rerank chain: Jina (primary, 4s timeout) → Cohere (fallback, 4s timeout) → DB order
   if (userQuery && cards.length > 1) {
     const docs = cards.map(toRerankDoc)
 
     if (process.env.JINA_API_KEY) {
-      const ranked = await jinaRerank(userQuery, docs, 6)
-      if (ranked.length > 0) {
-        const jinaResults = ranked.map((r) => cards[r.index]).filter(Boolean) as ProjectCard[]
-        await setCached(cacheKey, jinaResults, 60 * 60 * 2)
-        return jinaResults
+      try {
+        const ranked = await withTimeout(jinaRerank(userQuery, docs, 6), 4000)
+        if (ranked.length > 0) {
+          const jinaResults = ranked.map((r) => cards[r.index]).filter(Boolean) as ProjectCard[]
+          await setCached(cacheKey, jinaResults, 60 * 60 * 2)
+          return jinaResults
+        }
+      } catch (err) {
+        console.warn('[repo] jina rerank skipped:', err instanceof Error ? err.message : err)
       }
     }
 
     if (process.env.COHERE_API_KEY) {
-      const ranked = await cohereRerank(userQuery, docs, 6)
-      if (ranked.length > 0) {
-        const cohereResults = ranked.map((r) => cards[r.index]).filter(Boolean) as ProjectCard[]
-        await setCached(cacheKey, cohereResults, 60 * 60 * 2)
-        return cohereResults
+      try {
+        const ranked = await withTimeout(cohereRerank(userQuery, docs, 6), 4000)
+        if (ranked.length > 0) {
+          const cohereResults = ranked.map((r) => cards[r.index]).filter(Boolean) as ProjectCard[]
+          await setCached(cacheKey, cohereResults, 60 * 60 * 2)
+          return cohereResults
+        }
+      } catch (err) {
+        console.warn('[repo] cohere rerank skipped:', err instanceof Error ? err.message : err)
       }
     }
   }

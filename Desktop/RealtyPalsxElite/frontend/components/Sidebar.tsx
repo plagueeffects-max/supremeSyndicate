@@ -24,14 +24,20 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
 
   useEffect(() => {
     if (!userId) return;
+    const controller = new AbortController();
     setSessionsLoading(true);
     fetch(`${API_BASE}/chat/session/list`, {
       headers: { 'X-User-Id': userId },
+      signal: controller.signal,
     })
       .then((r) => r.json())
       .then((data) => setRecentSessions(data.sessions ?? []))
-      .catch(() => setRecentSessions([]))
+      .catch((err) => {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        setRecentSessions([]);
+      })
       .finally(() => setSessionsLoading(false));
+    return () => controller.abort();
   }, [userId]);
 
   const routeToView: Record<string, 'discovery' | 'saved' | 'compare' | 'value-estimator' | 'market-intelligence' | 'lead-snapshot'> = {
@@ -44,11 +50,10 @@ export default function Sidebar({ activeView: activeViewProp, onViewChange, user
   };
   const activeView = routeToView[pathname ?? ''] ?? activeViewProp ?? 'discovery';
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+  const handleLogout = () => {
     localStorage.removeItem('user_id');
-    router.push('/');
+    router.push('/auth');
+    createClient().auth.signOut().catch(() => {});
   };
 
 

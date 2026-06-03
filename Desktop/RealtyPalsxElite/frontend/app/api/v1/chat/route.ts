@@ -470,17 +470,23 @@ export async function POST(request: NextRequest) {
           const webCacheKey = makeKey('websearch', webQuery.toLowerCase().slice(0, 120))
           let webContext = await getCached<string>(webCacheKey)
 
-          if (!webContext) {
-            const [, webResult] = await Promise.all([
-              saveUserMsg,
-              tavilySearch(webQuery, 3),
-            ])
-            webContext = formatTavilyContext(webResult.answer, webResult.results) || ''
-            console.log(`[chat] 🌐 web src=${webResult.source} results=${webResult.results.length} cached=false`)
-            if (webContext) await setCached(webCacheKey, webContext, 60 * 60 * 24)
-          } else {
-            console.log(`[chat] 🌐 web cached=true`)
-            await saveUserMsg
+          try {
+            if (!webContext) {
+              const [, webResult] = await Promise.all([
+                saveUserMsg,
+                tavilySearch(webQuery, 3),
+              ])
+              webContext = formatTavilyContext(webResult.answer, webResult.results) || ''
+              console.log(`[chat] 🌐 web src=${webResult.source} results=${webResult.results.length} cached=false`)
+              if (webContext) await setCached(webCacheKey, webContext, 60 * 60 * 24)
+            } else {
+              console.log(`[chat] 🌐 web cached=true`)
+              await saveUserMsg
+            }
+          } catch (toolErr) {
+            console.warn('[chat] web search failed:', toolErr instanceof Error ? toolErr.message : toolErr)
+            await saveUserMsg.catch(() => {})
+            webContext = ''
           }
 
           secondMessages.push({
@@ -504,14 +510,19 @@ export async function POST(request: NextRequest) {
           const commuteKey = makeKey('commute', origin.toLowerCase(), destination.toLowerCase())
           let commuteData = await getCached<object>(commuteKey)
 
-          if (!commuteData) {
-            const [, result] = await Promise.all([saveUserMsg, getCommuteTime(origin, destination)])
-            if (result) {
-              commuteData = result
-              await setCached(commuteKey, result, 60 * 60 * 6)
+          try {
+            if (!commuteData) {
+              const [, result] = await Promise.all([saveUserMsg, getCommuteTime(origin, destination)])
+              if (result) {
+                commuteData = result
+                await setCached(commuteKey, result, 60 * 60 * 6)
+              }
+            } else {
+              await saveUserMsg
             }
-          } else {
-            await saveUserMsg
+          } catch (toolErr) {
+            console.warn('[chat] commute tool failed:', toolErr instanceof Error ? toolErr.message : toolErr)
+            await saveUserMsg.catch(() => {})
           }
 
           secondMessages.push({
@@ -582,7 +593,14 @@ export async function POST(request: NextRequest) {
           const reraUrl: string = args.rera_url || (args.rera_number
             ? `https://www.up-rera.in/projects?project_search=${encodeURIComponent(args.rera_number)}`
             : 'https://www.up-rera.in')
-          const [, reraContent] = await Promise.all([saveUserMsg, jinaRead(reraUrl, 2000)])
+          let reraContent: string | null = null
+          try {
+            const [, content] = await Promise.all([saveUserMsg, jinaRead(reraUrl, 2000)])
+            reraContent = content
+          } catch (toolErr) {
+            console.warn('[chat] RERA read failed:', toolErr instanceof Error ? toolErr.message : toolErr)
+            await saveUserMsg.catch(() => {})
+          }
           const toolResult = reraContent
             ? `RERA page for ${args.rera_number || 'search'}:\n${reraContent}`
             : `Could not fetch RERA page. Advise user to visit https://www.up-rera.in directly.`
